@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model endereco_de_entrega {
+  uuid_endereco        String   @id @db.Char(40)
+  uf_endereco          String   @db.VarChar(45)
+  cidade_endereco      String   @db.VarChar(45)
+  logradouro_endereco  String   @db.VarChar(45)
+  numero_endereco      Int
+  complemento_endereco String?  @db.VarChar(45)
+  pedido               pedido[]
+}
+
+model item_pedido {
+  id_item_pedido          Int    @id @default(autoincrement())
+  pedido_uuid_pedido      String @db.Char(40)
+  id_produto              Int
+  nome_produto            String @db.VarChar(150)
+  preco_item_pedido       Int
+  total_preco_item_pedido Int
+  quantidade_item_pedido  Int
+  pedido                  pedido @relation(fields: [pedido_uuid_pedido], references: [uuid_pedido], onUpdate: Restrict, map: "fk_item_pedido_pedido")
+
+  @@index([pedido_uuid_pedido], map: "pedido_uuid_pedido")
+}
+
+model metodos_de_pagamento {
+  id_metodos_de_pagamento Int         @id @default(autoincrement())
+  metodo_de_pagamento     String?     @db.VarChar(45)
+  pagamento               pagamento[]
+}
+
+model pagamento {
+  uuid_pagamento                               String               @id @db.Char(40)
+  parcelas_pagamento                           Int?
+  metodos_de_pagamento_id_metodos_de_pagamento Int
+  codigo_do_pagamento                          String               @db.VarChar(100)
+  pedido_uuid_pedido                           String               @db.Char(40)
+  status_pagamento_id_status_pagamento         Int
+  recibo_pagamento_uuid_recibo_pagamento       Int
+  nfe_pagamento                                String               @db.VarChar(45)
+  metodos_de_pagamento                         metodos_de_pagamento @relation(fields: [metodos_de_pagamento_id_metodos_de_pagamento], references: [id_metodos_de_pagamento], onUpdate: Restrict, map: "fk_pagamento_metodo")
+  pedido                                       pedido               @relation(fields: [pedido_uuid_pedido], references: [uuid_pedido], onUpdate: Restrict, map: "fk_pagamento_pedido")
+  status_pagamento                             status_pagamento     @relation(fields: [status_pagamento_id_status_pagamento], references: [id_status_pagamento], onUpdate: Restrict, map: "fk_pagamento_status")
+
+  @@index([metodos_de_pagamento_id_metodos_de_pagamento], map: "metodos_de_pagamento_id_metodos_de_pagamento")
+  @@index([pedido_uuid_pedido], map: "pedido_uuid_pedido")
+  @@index([status_pagamento_id_status_pagamento], map: "status_pagamento_id_status_pagamento")
+}
+
+model pedido {
+  uuid_pedido                       String              @id @db.Char(40)
+  valor_total_pedido                Int
+  destinatario_id_destinatario      String              @db.Char(40)
+  endereco_de_entrega_uuid_endereco String              @db.Char(40)
+  status_pedido_id_status_pedido    Int
+  nome_destinatario                 String              @db.VarChar(150)
+  item_pedido                       item_pedido[]
+  pagamento                         pagamento[]
+  endereco_de_entrega               endereco_de_entrega @relation(fields: [endereco_de_entrega_uuid_endereco], references: [uuid_endereco], onUpdate: Restrict, map: "fk_pedido_endereco")
+  status_pedido                     status_pedido       @relation(fields: [status_pedido_id_status_pedido], references: [id_status_pedido], onUpdate: Restrict, map: "fk_pedido_status")
+
+  @@index([endereco_de_entrega_uuid_endereco], map: "endereco_de_entrega_uuid_endereco")
+  @@index([status_pedido_id_status_pedido], map: "status_pedido_id_status_pedido")
+}
+
+model status_pagamento {
+  id_status_pagamento   Int         @id @default(autoincrement())
+  nome_status_pagamento String      @db.VarChar(45)
+  pagamento             pagamento[]
+}
+
+model status_pedido {
+  id_status_pedido   Int      @id @default(autoincrement())
+  nome_status_pedido String?  @db.VarChar(50)
+  pedido             pedido[]
+}

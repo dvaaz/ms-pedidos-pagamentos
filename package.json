@@ -1,0 +1,30 @@
+{
+  "name": "ms-produtospagamentos",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dvaaz/ms-produtospagamentos.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dvaaz/ms-produtospagamentos/issues"
+  },
+  "homepage": "https://github.com/dvaaz/ms-produtospagamentos#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "prisma": "^6.19.3",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "dotenv": "^17.4.2"
+  }
+}
