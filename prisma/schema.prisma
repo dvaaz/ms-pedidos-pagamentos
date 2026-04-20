@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL") // para Prisma 6, não está funcionando sem a a url
 }
 
 model endereco_de_entrega {
