@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './database/prisma/prisma.module';
-import { MetodosDePagamentoService } from './metodos-de-pagamento/metodos-de-pagamento.service';
-import { MetodosDePagamentoController } from './metodos-de-pagamento/metodos-de-pagamento.controller';
-import { MetodosDePagamentoModule } from './metodos-de-pagamento/metodos-de-pagamento.module';
+import { MetodosDePagamentoService } from './metodos_de_pagamento/metodos_de_pagamento.service';
+import { MetodosDePagamentoController } from './metodos_de_pagamento/metodos_de_pagamento.controller';
+import { MetodosDePagamentoModule } from './metodos_de_pagamento/metodos_de_pagamento.module';
+
 
 @Module({
   imports: [PrismaModule, MetodosDePagamentoModule],

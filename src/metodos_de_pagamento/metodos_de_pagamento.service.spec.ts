@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MetodosDePagamentoService } from './metodos-de-pagamento.service';
+import { MetodosDePagamentoService } from './metodos_de_pagamento.service';
 
 describe('MetodosDePagamentoService', () => {
   let service: MetodosDePagamentoService;
