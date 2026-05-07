@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import type { CreateMetodosDePagamentoDto } from './dto/create-metodos_de_pagamento.dto';
 import type { UpdateMetodosDePagamentoDto } from './dto/update-metodos_de_pagamento.dto';
 import { PrismaService } from '../database/prisma/prisma.service';
-import { Prisma as PrismaClient, metodos_de_pagamento as PagamentoModel } from '../generated/prisma/client.js';
-import { metodos_de_pagamentoWhereUniqueInput } from '../../dist/src/generated/prisma/models/metodos_de_pagamento';
+import { Prisma as PrismaClient, metodos_de_pagamento as PagamentoModel} from '../generated/prisma/client.js';
+
+// import {MetodosDePagamento as PagamentoModel} from './entities/metodos_de_pagamento.entity'
 
 @Injectable()
 export class MetodosDePagamentoService {
@@ -47,9 +48,10 @@ export class MetodosDePagamentoService {
    * @param input 
    * @returns 
    */
-  async findOne(input: PrismaClient.metodos_de_pagamentoWhereUniqueInput): Promise<PagamentoModel | null> {
-    try {return await this.prisma.metodos_de_pagamento.findUnique({ 
-      where: input 
+  async findOne(input: number): Promise<PagamentoModel | null> {
+    try {
+      return await this.prisma.metodos_de_pagamento.findUnique({ 
+      where: { metodos_de_pagamento_id: input } 
     });
   } catch (e) {
     if (e instanceof PrismaClient.PrismaClientKnownRequestError && e.code === 'P2025') {
