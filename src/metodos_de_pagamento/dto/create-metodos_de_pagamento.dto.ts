@@ -1,3 +1,3 @@
 export type CreateMetodosDePagamentoDto = {
-    nome: string
+    metodo_de_pagamento_nome: string
 };

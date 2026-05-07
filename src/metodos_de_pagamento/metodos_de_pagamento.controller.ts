@@ -18,18 +18,18 @@ export class MetodosDePagamentoController {
     return this.metodosDePagamentoService.findAll({});
   }
 
-  @Get(':id')
+  @Get('/:id')
   findOne(@Param('id') id: number): Promise<PagamentoModel | null> {
-    return this.metodosDePagamentoService.findOne(id);
+    return this.metodosDePagamentoService.findOne(+id); // o parametro está vindo como string o '+' alterna para number
   }
 
-  @Patch(':id')
+  @Patch('/:id')
   update(@Param('id') id: number, @Body() data: UpdateMetodosDePagamentoDto) {
-    return this.metodosDePagamentoService.update({ where: { metodos_de_pagamento_id: id }, data });
+    return this.metodosDePagamentoService.update({ where: { metodos_de_pagamento_id: +id }, data });
   }
 
-  @Delete(':id')
+  @Delete('/:id')
   remove(@Param('id') id: number) {
-    return this.metodosDePagamentoService.remove({ metodos_de_pagamento_id: id });
+    return this.metodosDePagamentoService.remove({ metodos_de_pagamento_id: +id });
   }
 }

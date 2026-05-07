@@ -50,6 +50,7 @@ export class MetodosDePagamentoService {
    */
   async findOne(input: number): Promise<PagamentoModel | null> {
     try {
+      
       return await this.prisma.metodos_de_pagamento.findUnique({ 
       where: { metodos_de_pagamento_id: input } 
     });
@@ -71,7 +72,10 @@ export class MetodosDePagamentoService {
     where: PrismaClient.metodos_de_pagamentoWhereUniqueInput;
     data: UpdateMetodosDePagamentoDto;}) : Promise<PagamentoModel> {
       try {
-        return await this.prisma.metodos_de_pagamento.update(params);
+        return await this.prisma.metodos_de_pagamento.update({
+          where: { metodos_de_pagamento_id: params.where.metodos_de_pagamento_id },
+          data: params.data
+        });
       } catch (e) {
         if (e instanceof PrismaClient.PrismaClientKnownRequestError && e.code === 'P2025') { 
           throw new Error('Método de pagamento não encontrado');
