@@ -1,3 +1,5 @@
-export type CreateMetodosDePagamentoDto = {
-    metodo_de_pagamento_nome: string
-};
+
+export class CreateMetodosDePagamentoDto {
+    nome!: string
+}
+

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { CreateMetodosDePagamentoDto } from './dto/create-metodos_de_pagamento.dto';
-import type { UpdateMetodosDePagamentoDto } from './dto/update-metodos_de_pagamento.dto';
+import type { CreateStatusPedidoDto } from './dto/create-status_pedido.dto';
+import type { UpdateStatusPedidoDto } from './dto/update-status_pedido.dto';
 import { PrismaService } from '../database/prisma/prisma.service';
-import { Prisma as PrismaClient, metodos_de_pagamento as PagamentoModel} from '../generated/prisma/client.js';
+import { Prisma as PrismaClient, status_pedido as StatusPedidoModel} from '../generated/prisma/client.js';
 
 
 
 @Injectable()
-export class MetodosDePagamentoService {
+export class StatusPedidoService {
   constructor(
     private readonly prisma: PrismaService
   ) {}
@@ -17,14 +17,14 @@ export class MetodosDePagamentoService {
    * @param data 
    * @returns 
    */
-  async create(data: CreateMetodosDePagamentoDto): Promise<PagamentoModel> {
+  async create(data: CreateStatusPedidoDto): Promise<StatusPedidoModel> {
     if (!data.nome || data.nome.trim() === '') {
       throw new Error('O nome do método de pagamento é obrigatório');
     }
-    const model: Omit<PagamentoModel, 'metodos_de_pagamento_id'> = {
-      metodo_de_pagamento_nome: data.nome.trim().toUpperCase(),
+    const model: Omit<StatusPedidoModel, 'status_pedido_id'> = {
+      status_pedido_nome: data.nome.trim().toUpperCase(),
     };
-    return await this.prisma.metodos_de_pagamento.create({ data: model });
+    return await this.prisma.status_pedido.create({ data: model });
   }
 
   /**
@@ -35,12 +35,12 @@ export class MetodosDePagamentoService {
   async findAll(params:{
     skip?: number; // Número de registros a pular
     take?: number; // Número de registros a buscar
-    cursor?: PrismaClient.metodos_de_pagamentoWhereUniqueInput; // Cursor para paginação
-    where?: PrismaClient.metodos_de_pagamentoWhereInput; // Filtros para a consulta
-    orderBy?: PrismaClient.metodos_de_pagamentoOrderByWithRelationInput; // Ordenação dos resultados
-  }): Promise<PagamentoModel[]> {
+    cursor?: PrismaClient.status_pedidoWhereUniqueInput; // Cursor para paginação
+    where?: PrismaClient.status_pedidoWhereInput; // Filtros para a consulta
+    orderBy?: PrismaClient.status_pedidoOrderByWithRelationInput; // Ordenação dos resultados
+  }): Promise<StatusPedidoModel[]> {
     const { skip, take, cursor, where, orderBy } = params;
-    return await this.prisma.metodos_de_pagamento.findMany({
+    return await this.prisma.status_pedido.findMany({
       skip,
       take,
       cursor,
@@ -54,11 +54,11 @@ export class MetodosDePagamentoService {
    * @param input 
    * @returns 
    */
-  async findOne(input: number): Promise<PagamentoModel | null> {
+  async findOne(input: number): Promise<StatusPedidoModel | null> {
     try {
       
-      return await this.prisma.metodos_de_pagamento.findUnique({ 
-      where: { metodos_de_pagamento_id: input } 
+      return await this.prisma.status_pedido.findUnique({ 
+      where: { status_pedido_id: input } 
     });
   } catch (e) {
     if (e instanceof PrismaClient.PrismaClientKnownRequestError && e.code === 'P2025') {
@@ -75,18 +75,18 @@ export class MetodosDePagamentoService {
    * @returns 
    */
   async update(params: {
-    where: PrismaClient.metodos_de_pagamentoWhereUniqueInput;
-    data: UpdateMetodosDePagamentoDto;}) : Promise<PagamentoModel> {
+    where: PrismaClient.status_pedidoWhereUniqueInput;
+    data: UpdateStatusPedidoDto;}) : Promise<StatusPedidoModel> {
       try {
         if (params.data.nome && params.data.nome.trim() === '') {
           throw new Error('O nome do método de pagamento não pode ser vazio');
         }
-        const updateData: Partial<PagamentoModel> = {};
+        const updateData: Partial<StatusPedidoModel> = {};
         if (params.data.nome) {
-          updateData.metodo_de_pagamento_nome = params.data.nome.trim().toUpperCase();
+          updateData.status_pedido_nome = params.data.nome.trim().toUpperCase();
         }
-        return await this.prisma.metodos_de_pagamento.update({
-          where: { metodos_de_pagamento_id: params.where.metodos_de_pagamento_id },
+        return await this.prisma.status_pedido.update({
+          where: { status_pedido_id: params.where.status_pedido_id },
           data: updateData
         });
       } catch (e) {
@@ -103,10 +103,10 @@ export class MetodosDePagamentoService {
    * @returns 
    */
   async remove(
-    where: PrismaClient.metodos_de_pagamentoWhereUniqueInput
+    where: PrismaClient.status_pedidoWhereUniqueInput
   ) {
     try{
-      return await this.prisma.metodos_de_pagamento.delete({ where });
+      return await this.prisma.status_pedido.delete({ where });
     } catch (e) {
         if (e instanceof PrismaClient.PrismaClientKnownRequestError && e.code === 'P2025') { 
           throw new Error('Método de pagamento não encontrado');
