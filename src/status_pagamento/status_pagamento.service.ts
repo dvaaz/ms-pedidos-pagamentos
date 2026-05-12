@@ -5,7 +5,6 @@ import { PrismaService } from '../database/prisma/prisma.service';
 import { Prisma as PrismaClient, status_pagamento as StatusPagamentoModel} from '../generated/prisma/client.js';
 
 
-
 @Injectable()
 export class StatusPagamentoService {
   constructor(
