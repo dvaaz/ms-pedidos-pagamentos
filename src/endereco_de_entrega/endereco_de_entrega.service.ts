@@ -18,14 +18,27 @@ export class EnderecoDeEntregaService {
      * @returns 
      */
     async create(data: createDto): Promise<EnderecoEntregaModel> {
-        // Implementação para criar um novo endereço de entrega
+        // verifica se o cep e o destinatário foram fornecidos
         if (!data.cep || data.cep.trim() === '') {
             throw new Error('O CEP é obrigatório');
+        }
+        if (!data.destinatario || data.destinatario.trim() === '') {
+            throw new Error('O destinatário é obrigatório');
+        }
+        // Verifica se o usuario_uuid é válido
+            // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
+        // Verifica se o usuario possui no máximo 3 endereços cadastrados
+        const count = await this.prisma.endereco_de_entrega.count({
+            where: { endereco_usuario_uuid: data.destinatario.trim() }
+        });
+        if (count >= 3) {
+            throw new Error('O usuário já possui o número máximo de endereços cadastrados');
         }
 
         const model: Omit<EnderecoEntregaModel, 
             'endereco_created_at' | 'endereco_updated_at'> = {
             endereco_uuid: uuidv7(),
+            endereco_usuario_uuid: data.destinatario.trim(),
             endereco_cep: createDto.cepLimpo(data.cep),
             endereco_logradouro: data.logradouro? data.logradouro.trim() : '',
             endereco_numero: createDto.numeroInt(data.numero),
@@ -37,7 +50,7 @@ export class EnderecoDeEntregaService {
     }
      
     /**
-     * Busca todos os endereços de entrega
+     * Busca todos os endereços de entrega (rota Admin)
      * @param params 
      * @returns
      */
@@ -48,6 +61,7 @@ export class EnderecoDeEntregaService {
         where?: PrismaClient.endereco_de_entregaWhereInput; // Filtros para a consulta
         orderBy?: PrismaClient.endereco_de_entregaOrderByWithRelationInput; // Ordenação dos resultados
     }): Promise<EnderecoEntregaModel[]> {
+        try{
         const { skip, take, cursor, where, orderBy } = params;
         return await this.prisma.endereco_de_entrega.findMany({
             skip,
@@ -56,6 +70,27 @@ export class EnderecoDeEntregaService {
             where,
             orderBy,
         });
+    } catch (e) {
+        throw new Error(`Erro ao buscar endereços de entrega: ${e.message}`);
+    }
+    }
+
+    /**
+     * Busca por todos os endereços de entrega de um usuário especifico. Cada usuário tem um máximo de 3 endereços cadastrados
+     * @param usuario_uuid 
+     * @returns
+     */
+    async findAllByUsuario(usuario_uuid: string): Promise<EnderecoEntregaModel[]> {
+       try{
+        // Verifica se o usuario_uuid é válido
+            // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
+        return await this.prisma.endereco_de_entrega.findMany({
+            where: { endereco_usuario_uuid: usuario_uuid },
+            orderBy: { endereco_created_at: 'desc' },
+        });
+    } catch (e) {
+        throw new Error(`Erro ao buscar endereços de entrega do usuário: ${e.message}`);
+    }
     }
 
     /**
@@ -63,10 +98,12 @@ export class EnderecoDeEntregaService {
      * @param input 
      * @returns
      */
-    async findOne(input: string): Promise<EnderecoEntregaModel | null> {
+    async findOne(input: string, user: string): Promise<EnderecoEntregaModel | null> {
         try {
+            // Verifica se o usuario_uuid é válido
+            // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
             return await this.prisma.endereco_de_entrega.findUnique({ 
-                where: { endereco_uuid: input } 
+                where: { endereco_uuid: input, endereco_usuario_uuid: user }
             });
         } catch (e) {
             throw new Error(`Erro ao buscar endereço de entrega: ${e.message}`);
@@ -79,11 +116,11 @@ export class EnderecoDeEntregaService {
      * @param data 
      * @returns
      */
-    async update(id: string, data: updateDto): Promise<EnderecoEntregaModel> {
+    async update(id: string, user: string, data: updateDto): Promise<EnderecoEntregaModel> {
         try {
             // Verifica se o endereço existe antes de tentar atualizar
             const existing = await this.prisma.endereco_de_entrega.findUnique({ 
-                where: { endereco_uuid: id } 
+                where: { endereco_uuid: id, endereco_usuario_uuid: user }
             });
             // Se o endereço não existir, lança um erro
             if (!existing) {
@@ -110,7 +147,7 @@ export class EnderecoDeEntregaService {
                 }
             return await this.prisma.endereco_de_entrega.update({
                 // cria um objeto de atualização com os campos fornecidos
-                where: { endereco_uuid: id },
+                where: { endereco_uuid: id, endereco_usuario_uuid: user },
                 data: {
                     ...updateData,
                     endereco_updated_at: new Date()
@@ -126,11 +163,11 @@ export class EnderecoDeEntregaService {
      * @param id 
      * @returns
      */
-    async remove(id: string): Promise<boolean> {
+    async remove(id: string, user: string): Promise<boolean> {
         try {
             // Verifica se o endereço existe antes de tentar deletar
             const existing = await this.prisma.endereco_de_entrega.findUnique({ 
-                where: { endereco_uuid: id } 
+                where: { endereco_uuid: id, endereco_usuario_uuid: user } 
             });
             // Se o endereço não existir, retorna false
             if (!existing) {
@@ -138,7 +175,7 @@ export class EnderecoDeEntregaService {
             }
             // Tenta deletar o endereço            
             await this.prisma.endereco_de_entrega.delete({ 
-                where: { endereco_uuid: id } 
+                where: { endereco_uuid: id, endereco_usuario_uuid: user } 
             });
             // Se a deleção for bem-sucedida, retorna true
             return true;

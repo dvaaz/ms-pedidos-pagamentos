@@ -78,6 +78,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const Endereco_de_entregaScalarFieldEnum = {
   endereco_uuid: 'endereco_uuid',
+  endereco_usuario_uuid: 'endereco_usuario_uuid',
   endereco_uf: 'endereco_uf',
   endereco_municipio: 'endereco_municipio',
   endereco_logradouro: 'endereco_logradouro',
@@ -178,6 +179,7 @@ export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 export const endereco_de_entregaOrderByRelevanceFieldEnum = {
   endereco_uuid: 'endereco_uuid',
+  endereco_usuario_uuid: 'endereco_usuario_uuid',
   endereco_uf: 'endereco_uf',
   endereco_municipio: 'endereco_municipio',
   endereco_logradouro: 'endereco_logradouro',

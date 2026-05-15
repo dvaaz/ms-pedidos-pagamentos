@@ -36,6 +36,7 @@ export type Endereco_de_entregaSumAggregateOutputType = {
 
 export type Endereco_de_entregaMinAggregateOutputType = {
   endereco_uuid: string | null
+  endereco_usuario_uuid: string | null
   endereco_uf: string | null
   endereco_municipio: string | null
   endereco_logradouro: string | null
@@ -48,6 +49,7 @@ export type Endereco_de_entregaMinAggregateOutputType = {
 
 export type Endereco_de_entregaMaxAggregateOutputType = {
   endereco_uuid: string | null
+  endereco_usuario_uuid: string | null
   endereco_uf: string | null
   endereco_municipio: string | null
   endereco_logradouro: string | null
@@ -60,6 +62,7 @@ export type Endereco_de_entregaMaxAggregateOutputType = {
 
 export type Endereco_de_entregaCountAggregateOutputType = {
   endereco_uuid: number
+  endereco_usuario_uuid: number
   endereco_uf: number
   endereco_municipio: number
   endereco_logradouro: number
@@ -82,6 +85,7 @@ export type Endereco_de_entregaSumAggregateInputType = {
 
 export type Endereco_de_entregaMinAggregateInputType = {
   endereco_uuid?: true
+  endereco_usuario_uuid?: true
   endereco_uf?: true
   endereco_municipio?: true
   endereco_logradouro?: true
@@ -94,6 +98,7 @@ export type Endereco_de_entregaMinAggregateInputType = {
 
 export type Endereco_de_entregaMaxAggregateInputType = {
   endereco_uuid?: true
+  endereco_usuario_uuid?: true
   endereco_uf?: true
   endereco_municipio?: true
   endereco_logradouro?: true
@@ -106,6 +111,7 @@ export type Endereco_de_entregaMaxAggregateInputType = {
 
 export type Endereco_de_entregaCountAggregateInputType = {
   endereco_uuid?: true
+  endereco_usuario_uuid?: true
   endereco_uf?: true
   endereco_municipio?: true
   endereco_logradouro?: true
@@ -205,6 +211,7 @@ export type endereco_de_entregaGroupByArgs<ExtArgs extends runtime.Types.Extensi
 
 export type Endereco_de_entregaGroupByOutputType = {
   endereco_uuid: string
+  endereco_usuario_uuid: string
   endereco_uf: string
   endereco_municipio: string
   endereco_logradouro: string
@@ -240,6 +247,7 @@ export type endereco_de_entregaWhereInput = {
   OR?: Prisma.endereco_de_entregaWhereInput[]
   NOT?: Prisma.endereco_de_entregaWhereInput | Prisma.endereco_de_entregaWhereInput[]
   endereco_uuid?: Prisma.StringFilter<"endereco_de_entrega"> | string
+  endereco_usuario_uuid?: Prisma.StringFilter<"endereco_de_entrega"> | string
   endereco_uf?: Prisma.StringFilter<"endereco_de_entrega"> | string
   endereco_municipio?: Prisma.StringFilter<"endereco_de_entrega"> | string
   endereco_logradouro?: Prisma.StringFilter<"endereco_de_entrega"> | string
@@ -253,6 +261,7 @@ export type endereco_de_entregaWhereInput = {
 
 export type endereco_de_entregaOrderByWithRelationInput = {
   endereco_uuid?: Prisma.SortOrder
+  endereco_usuario_uuid?: Prisma.SortOrder
   endereco_uf?: Prisma.SortOrder
   endereco_municipio?: Prisma.SortOrder
   endereco_logradouro?: Prisma.SortOrder
@@ -270,6 +279,7 @@ export type endereco_de_entregaWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.endereco_de_entregaWhereInput | Prisma.endereco_de_entregaWhereInput[]
   OR?: Prisma.endereco_de_entregaWhereInput[]
   NOT?: Prisma.endereco_de_entregaWhereInput | Prisma.endereco_de_entregaWhereInput[]
+  endereco_usuario_uuid?: Prisma.StringFilter<"endereco_de_entrega"> | string
   endereco_uf?: Prisma.StringFilter<"endereco_de_entrega"> | string
   endereco_municipio?: Prisma.StringFilter<"endereco_de_entrega"> | string
   endereco_logradouro?: Prisma.StringFilter<"endereco_de_entrega"> | string
@@ -283,6 +293,7 @@ export type endereco_de_entregaWhereUniqueInput = Prisma.AtLeast<{
 
 export type endereco_de_entregaOrderByWithAggregationInput = {
   endereco_uuid?: Prisma.SortOrder
+  endereco_usuario_uuid?: Prisma.SortOrder
   endereco_uf?: Prisma.SortOrder
   endereco_municipio?: Prisma.SortOrder
   endereco_logradouro?: Prisma.SortOrder
@@ -303,6 +314,7 @@ export type endereco_de_entregaScalarWhereWithAggregatesInput = {
   OR?: Prisma.endereco_de_entregaScalarWhereWithAggregatesInput[]
   NOT?: Prisma.endereco_de_entregaScalarWhereWithAggregatesInput | Prisma.endereco_de_entregaScalarWhereWithAggregatesInput[]
   endereco_uuid?: Prisma.StringWithAggregatesFilter<"endereco_de_entrega"> | string
+  endereco_usuario_uuid?: Prisma.StringWithAggregatesFilter<"endereco_de_entrega"> | string
   endereco_uf?: Prisma.StringWithAggregatesFilter<"endereco_de_entrega"> | string
   endereco_municipio?: Prisma.StringWithAggregatesFilter<"endereco_de_entrega"> | string
   endereco_logradouro?: Prisma.StringWithAggregatesFilter<"endereco_de_entrega"> | string
@@ -315,6 +327,7 @@ export type endereco_de_entregaScalarWhereWithAggregatesInput = {
 
 export type endereco_de_entregaCreateInput = {
   endereco_uuid: string
+  endereco_usuario_uuid: string
   endereco_uf: string
   endereco_municipio: string
   endereco_logradouro: string
@@ -328,6 +341,7 @@ export type endereco_de_entregaCreateInput = {
 
 export type endereco_de_entregaUncheckedCreateInput = {
   endereco_uuid: string
+  endereco_usuario_uuid: string
   endereco_uf: string
   endereco_municipio: string
   endereco_logradouro: string
@@ -341,6 +355,7 @@ export type endereco_de_entregaUncheckedCreateInput = {
 
 export type endereco_de_entregaUpdateInput = {
   endereco_uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  endereco_usuario_uuid?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_uf?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_municipio?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_logradouro?: Prisma.StringFieldUpdateOperationsInput | string
@@ -354,6 +369,7 @@ export type endereco_de_entregaUpdateInput = {
 
 export type endereco_de_entregaUncheckedUpdateInput = {
   endereco_uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  endereco_usuario_uuid?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_uf?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_municipio?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_logradouro?: Prisma.StringFieldUpdateOperationsInput | string
@@ -367,6 +383,7 @@ export type endereco_de_entregaUncheckedUpdateInput = {
 
 export type endereco_de_entregaCreateManyInput = {
   endereco_uuid: string
+  endereco_usuario_uuid: string
   endereco_uf: string
   endereco_municipio: string
   endereco_logradouro: string
@@ -379,6 +396,7 @@ export type endereco_de_entregaCreateManyInput = {
 
 export type endereco_de_entregaUpdateManyMutationInput = {
   endereco_uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  endereco_usuario_uuid?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_uf?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_municipio?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_logradouro?: Prisma.StringFieldUpdateOperationsInput | string
@@ -391,6 +409,7 @@ export type endereco_de_entregaUpdateManyMutationInput = {
 
 export type endereco_de_entregaUncheckedUpdateManyInput = {
   endereco_uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  endereco_usuario_uuid?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_uf?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_municipio?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_logradouro?: Prisma.StringFieldUpdateOperationsInput | string
@@ -409,6 +428,7 @@ export type endereco_de_entregaOrderByRelevanceInput = {
 
 export type endereco_de_entregaCountOrderByAggregateInput = {
   endereco_uuid?: Prisma.SortOrder
+  endereco_usuario_uuid?: Prisma.SortOrder
   endereco_uf?: Prisma.SortOrder
   endereco_municipio?: Prisma.SortOrder
   endereco_logradouro?: Prisma.SortOrder
@@ -425,6 +445,7 @@ export type endereco_de_entregaAvgOrderByAggregateInput = {
 
 export type endereco_de_entregaMaxOrderByAggregateInput = {
   endereco_uuid?: Prisma.SortOrder
+  endereco_usuario_uuid?: Prisma.SortOrder
   endereco_uf?: Prisma.SortOrder
   endereco_municipio?: Prisma.SortOrder
   endereco_logradouro?: Prisma.SortOrder
@@ -437,6 +458,7 @@ export type endereco_de_entregaMaxOrderByAggregateInput = {
 
 export type endereco_de_entregaMinOrderByAggregateInput = {
   endereco_uuid?: Prisma.SortOrder
+  endereco_usuario_uuid?: Prisma.SortOrder
   endereco_uf?: Prisma.SortOrder
   endereco_municipio?: Prisma.SortOrder
   endereco_logradouro?: Prisma.SortOrder
@@ -492,6 +514,7 @@ export type endereco_de_entregaUpdateOneRequiredWithoutPedidoNestedInput = {
 
 export type endereco_de_entregaCreateWithoutPedidoInput = {
   endereco_uuid: string
+  endereco_usuario_uuid: string
   endereco_uf: string
   endereco_municipio: string
   endereco_logradouro: string
@@ -504,6 +527,7 @@ export type endereco_de_entregaCreateWithoutPedidoInput = {
 
 export type endereco_de_entregaUncheckedCreateWithoutPedidoInput = {
   endereco_uuid: string
+  endereco_usuario_uuid: string
   endereco_uf: string
   endereco_municipio: string
   endereco_logradouro: string
@@ -532,6 +556,7 @@ export type endereco_de_entregaUpdateToOneWithWhereWithoutPedidoInput = {
 
 export type endereco_de_entregaUpdateWithoutPedidoInput = {
   endereco_uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  endereco_usuario_uuid?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_uf?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_municipio?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_logradouro?: Prisma.StringFieldUpdateOperationsInput | string
@@ -544,6 +569,7 @@ export type endereco_de_entregaUpdateWithoutPedidoInput = {
 
 export type endereco_de_entregaUncheckedUpdateWithoutPedidoInput = {
   endereco_uuid?: Prisma.StringFieldUpdateOperationsInput | string
+  endereco_usuario_uuid?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_uf?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_municipio?: Prisma.StringFieldUpdateOperationsInput | string
   endereco_logradouro?: Prisma.StringFieldUpdateOperationsInput | string
@@ -587,6 +613,7 @@ export type Endereco_de_entregaCountOutputTypeCountPedidoArgs<ExtArgs extends ru
 
 export type endereco_de_entregaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   endereco_uuid?: boolean
+  endereco_usuario_uuid?: boolean
   endereco_uf?: boolean
   endereco_municipio?: boolean
   endereco_logradouro?: boolean
@@ -603,6 +630,7 @@ export type endereco_de_entregaSelect<ExtArgs extends runtime.Types.Extensions.I
 
 export type endereco_de_entregaSelectScalar = {
   endereco_uuid?: boolean
+  endereco_usuario_uuid?: boolean
   endereco_uf?: boolean
   endereco_municipio?: boolean
   endereco_logradouro?: boolean
@@ -613,7 +641,7 @@ export type endereco_de_entregaSelectScalar = {
   endereco_updated_at?: boolean
 }
 
-export type endereco_de_entregaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"endereco_uuid" | "endereco_uf" | "endereco_municipio" | "endereco_logradouro" | "endereco_numero" | "endereco_complemento" | "endereco_cep" | "endereco_created_at" | "endereco_updated_at", ExtArgs["result"]["endereco_de_entrega"]>
+export type endereco_de_entregaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"endereco_uuid" | "endereco_usuario_uuid" | "endereco_uf" | "endereco_municipio" | "endereco_logradouro" | "endereco_numero" | "endereco_complemento" | "endereco_cep" | "endereco_created_at" | "endereco_updated_at", ExtArgs["result"]["endereco_de_entrega"]>
 export type endereco_de_entregaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   pedido?: boolean | Prisma.endereco_de_entrega$pedidoArgs<ExtArgs>
   _count?: boolean | Prisma.Endereco_de_entregaCountOutputTypeDefaultArgs<ExtArgs>
@@ -626,6 +654,7 @@ export type $endereco_de_entregaPayload<ExtArgs extends runtime.Types.Extensions
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     endereco_uuid: string
+    endereco_usuario_uuid: string
     endereco_uf: string
     endereco_municipio: string
     endereco_logradouro: string
@@ -1005,6 +1034,7 @@ export interface Prisma__endereco_de_entregaClient<T, Null = never, ExtArgs exte
  */
 export interface endereco_de_entregaFieldRefs {
   readonly endereco_uuid: Prisma.FieldRef<"endereco_de_entrega", 'String'>
+  readonly endereco_usuario_uuid: Prisma.FieldRef<"endereco_de_entrega", 'String'>
   readonly endereco_uf: Prisma.FieldRef<"endereco_de_entrega", 'String'>
   readonly endereco_municipio: Prisma.FieldRef<"endereco_de_entrega", 'String'>
   readonly endereco_logradouro: Prisma.FieldRef<"endereco_de_entrega", 'String'>

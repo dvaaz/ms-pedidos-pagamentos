@@ -1,5 +1,6 @@
 export class CreateEnderecoDeEntregaDto {
     uf?: string;
+    destinatario?: string;
     municipio?: string;
     logradouro?: string;
     numero?: number;

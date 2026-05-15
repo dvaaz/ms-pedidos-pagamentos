@@ -10,6 +10,7 @@ datasource db {
 
 model endereco_de_entrega {
   endereco_uuid        String   @id @db.Char(36)
+  endereco_usuario_uuid String   @db.VarChar(36)
   endereco_uf          String   @db.VarChar(45)
   endereco_municipio   String   @db.VarChar(45)
   endereco_logradouro  String   @db.VarChar(45)
