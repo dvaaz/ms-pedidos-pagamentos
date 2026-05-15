@@ -19,6 +19,7 @@ export class EnderecoDeEntregaService {
      */
     async create(data: createDto): Promise<EnderecoEntregaModel> {
         // verifica se o cep e o destinatário foram fornecidos
+        try{
         if (!data.cep || data.cep.trim() === '') {
             throw new Error('O CEP é obrigatório');
         }
@@ -47,6 +48,9 @@ export class EnderecoDeEntregaService {
             endereco_uf: data.uf? data.uf.trim().toUpperCase() : '',
         }; 
         return await this.prisma.endereco_de_entrega.create({ data :model });
+    } catch (e) {
+        throw new Error(`Erro ao criar endereço de entrega: ${e.message}`);
+    }
     }
      
     /**
@@ -80,12 +84,12 @@ export class EnderecoDeEntregaService {
      * @param usuario_uuid 
      * @returns
      */
-    async findAllByUsuario(usuario_uuid: string): Promise<EnderecoEntregaModel[]> {
+    async findAllByUsuario(user: string): Promise<EnderecoEntregaModel[]> {
        try{
         // Verifica se o usuario_uuid é válido
             // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
         return await this.prisma.endereco_de_entrega.findMany({
-            where: { endereco_usuario_uuid: usuario_uuid },
+            where: { endereco_usuario_uuid: user },
             orderBy: { endereco_created_at: 'desc' },
         });
     } catch (e) {

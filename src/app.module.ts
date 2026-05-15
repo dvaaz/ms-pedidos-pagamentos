@@ -13,10 +13,11 @@ import { StatusPedidoModule } from './status_pedido/status_pedido.module';
 import { StatusPagamentoModule } from './status_pagamento/status_pagamento.module';
 import { EnderecoDeEntregaModule } from './endereco_de_entrega/endereco_de_entrega.module';
 import { PedidoModule } from './pedido/pedido.module';
+import { ItemPedidoModule } from './item_pedido/item_pedido.module';
 
 
 @Module({
-  imports: [PrismaModule, MetodosDePagamentoModule, StatusPedidoModule, StatusPagamentoModule, EnderecoDeEntregaModule, PedidoModule],
+  imports: [PrismaModule, MetodosDePagamentoModule, StatusPedidoModule, StatusPagamentoModule, EnderecoDeEntregaModule, PedidoModule, ItemPedidoModule],
   controllers: [AppController, MetodosDePagamentoController, StatusPagamentoController, StatusPedidoController],
   providers: [AppService, MetodosDePagamentoService, StatusPagamentoService, StatusPedidoService],
 })

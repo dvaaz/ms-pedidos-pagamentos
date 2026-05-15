@@ -27,6 +27,11 @@ export class EnderecoDeEntregaController {
     return this.enderecoDeEntregaService.findAll({});
   }
 
+  @Get('usuario/:user')
+  findByUsuario(@Param('user') user: string) {
+    return this.enderecoDeEntregaService.findAllByUsuario(user);
+  }
+
   /**
    * Busca um endereço de entrega por ID e verifica se pertence ao usuário autenticado
     * @param id

@@ -4,6 +4,12 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto';
 
 @Injectable()
 export class PedidoService {
+
+  /**
+   * 
+   * @param createPedidoDto 
+   * @returns 
+   */
   create(createPedidoDto: CreatePedidoDto) {
     return 'This action adds a new pedido';
   }
