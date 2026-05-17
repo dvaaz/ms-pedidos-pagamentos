@@ -1,5 +1,4 @@
 export class CreatePedidoDto {
-    usuario!: string;
     endereco_id!: string; // Recebe o id do endereço de entrega
     status_pedido?: number;
     destinatario?: string;

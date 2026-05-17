@@ -10,8 +10,12 @@ export class PedidoService {
    * @param createPedidoDto 
    * @returns 
    */
-  create(createPedidoDto: CreatePedidoDto) {
-    return 'This action adds a new pedido';
+  create(user: string, createPedidoDto: CreatePedidoDto) {
+    // Na esperança que o usuário já esteja autenticado e o token JWT seja decodificado, podemos acessar o nome do usuário diretamente.
+    // Então a primeira tarefa é garantir que o nome do usuário seja passado corretamente para este método. Isso pode ser feito através de um guard ou interceptor que decodifica o token JWT e extrai o nome do usuário, passando-o como argumento para este método.
+    // Agora, com o nome do usuário disponível, podemos associar o pedido criado a esse usuário. Isso pode ser feito armazenando o nome do usuário junto com os detalhes do pedido no banco de dados.
+    // A partir desse momento vamos acessaar ao item_pedido para passar o id de cada item e sua quantidade
+  
   }
 
   findAll() {
