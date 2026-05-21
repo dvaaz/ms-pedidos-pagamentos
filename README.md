@@ -11,3 +11,10 @@
 
 ## Incluido Nesta branch:
 * pedido (CRUD)
+* item_pedido (CRUD)
+
+# Ações:
+
+
+ * Removidos:
+ * * Removido do Controllers: Status de .. e Metodos de Pagamento; as funções Criar, Editar e Remover
