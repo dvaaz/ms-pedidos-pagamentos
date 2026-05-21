@@ -4,6 +4,7 @@ import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma as PrismaClient, endereco_de_entrega as EnderecoEntregaModel } from '../generated/prisma/client.js';
 import { CreateEnderecoDeEntregaDto as createDto } from './dto/create-endereco_de_entrega.dto';
 import { UpdateEnderecoDeEntregaDto as updateDto } from './dto/update-endereco_de_entrega.dto';
+import axios from 'axios';
 
 @Injectable()
 export class EnderecoDeEntregaService {
@@ -19,6 +20,7 @@ export class EnderecoDeEntregaService {
      */
     async create(data: createDto): Promise<EnderecoEntregaModel> {
         // verifica se o cep e o destinatário foram fornecidos
+        // deve receber no header o uuid do usuário, nesse momento recebe
         try{
         if (!data.cep || data.cep.trim() === '') {
             throw new Error('O CEP é obrigatório');
@@ -27,7 +29,10 @@ export class EnderecoDeEntregaService {
             throw new Error('O destinatário é obrigatório');
         }
         // Verifica se o usuario_uuid é válido
-            // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
+        // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
+        if (!data.destinatario) {
+            axios
+        }
         // Verifica se o usuario possui no máximo 3 endereços cadastrados
         const count = await this.prisma.endereco_de_entrega.count({
             where: { endereco_usuario_uuid: data.destinatario.trim() }

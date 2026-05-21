@@ -20,11 +20,15 @@ export class PedidoService {
     try {
       const pedidoUUid = uuidv7(); // Gera um UUID para o pedido
       // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
-
+      const itensPedidoValidos: CreateItemPedidoDto[] = [];
+      for createPedidoDto.itens_pedido in createPedidoDto:
+        itensPedidoValidos.push(createPedidoDto.itens_pedido);      
       // Para cada item no array do pedido é feita validação do mesmo, caso seja válido o item é adicionado ao array de itens do pedido, caso não seja válido, o item é ignorado e o processo continua.
       // TODO : Envia array de itens do Pedido e a quantidade de cada um para a API de produto que retornará apenas os itens válidos incluindo seu preço, nome
-      const itensPedidoValidos: CreateItemPedidoDto[] = [];
+      // Esses dados irao para um array de criar item pedido. Que contera o pedidoUUid criado nessa funcao, e sera encaminhado ao item_pedido
+
       
+
       return `This action adds a new pedido for user ${user} with the following details: ${JSON.stringify(createPedidoDto)}`;
     } catch (error) {
       throw new Error('Error creating pedido');

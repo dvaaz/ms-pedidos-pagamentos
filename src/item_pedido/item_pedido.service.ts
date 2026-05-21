@@ -17,7 +17,7 @@ export class ItemPedidoService {
    */
   create(createItemPedidoDto: CreateItemPedidoDto) {
     // Aqui a funcao recebe o id do produto e entra em contato com a API externa para verificar o nome e o preço atual do produto. Depois disso, o itemPedido é criado com as informações atualizadas e armazenado no banco de dados. O id do itemPedido criado é retornado para ser associado ao pedido posteriormente.
-    const produto = axios.get(`http://api.produto.com/produtos/${createItemPedidoDto.produto_id}`);
+    
     const itemPedido = {
       
   }

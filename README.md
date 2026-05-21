@@ -14,7 +14,8 @@
 * item_pedido (CRUD)
 
 # Ações:
-
+- Incluidos:
+ * Mock de criacao de pedido
 
  * Removidos:
  * * Removido do Controllers: Status de .. e Metodos de Pagamento; as funções Criar, Editar e Remover
