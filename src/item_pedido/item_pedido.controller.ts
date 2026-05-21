@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ItemPedidoService } from './item_pedido.service';
-import { CreateItemPedidoDto } from './dto/create-item_pedido.dto';
+import { CreateItemPedidoDto } from './dto/verify-item_pedido.dto';
 import { UpdateItemPedidoDto } from './dto/update-item_pedido.dto';
 
 @Controller('item-pedido')
