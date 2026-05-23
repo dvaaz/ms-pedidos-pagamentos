@@ -4,7 +4,7 @@ import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma as PrismaClient, endereco_de_entrega as EnderecoEntregaModel } from '../generated/prisma/client.js';
 import { CreateEnderecoDeEntregaDto as createDto } from './dto/create-endereco_de_entrega.dto';
 import { UpdateEnderecoDeEntregaDto as updateDto } from './dto/update-endereco_de_entrega.dto';
-import axios from 'axios';
+
 
 @Injectable()
 export class EnderecoDeEntregaService {
@@ -107,7 +107,7 @@ export class EnderecoDeEntregaService {
      * @param input 
      * @returns
      */
-    async findOne(input: string, user: string): Promise<EnderecoEntregaModel | null> {
+    async findOne(user: string, input?: string): Promise<EnderecoEntregaModel | null> {
         try {
             // Verifica se o usuario_uuid é válido
             // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
@@ -135,7 +135,9 @@ export class EnderecoDeEntregaService {
             if (!existing) {
                 throw new Error('Endereço de entrega não encontrado');
             }
+
             const updateData: PrismaClient.endereco_de_entregaUpdateInput = {};
+
                 if (data.cep !== undefined) {
                     updateData.endereco_cep = createDto.cepLimpo(data.cep);
                 }
@@ -154,6 +156,7 @@ export class EnderecoDeEntregaService {
                 if (data.uf !== undefined) {
                     updateData.endereco_uf = data.uf.trim().toUpperCase();
                 }
+
             return await this.prisma.endereco_de_entrega.update({
                 // cria um objeto de atualização com os campos fornecidos
                 where: { endereco_uuid: id, endereco_usuario_uuid: user },

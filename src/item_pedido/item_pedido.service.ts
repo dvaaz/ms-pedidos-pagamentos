@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateItemPedidoDto } from './dto/verify-item_pedido.dto';
+import { CreateItemPedidoDto } from './dto/check-item_pedido.dto';
 import { UpdateItemPedidoDto } from './dto/update-item_pedido.dto';
 // import axios from 'axios'; // Importando a biblioteca axios para fazer requisições HTTP
 import { PrismaService } from 'src/database/prisma/prisma.service';

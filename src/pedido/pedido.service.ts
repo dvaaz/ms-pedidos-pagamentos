@@ -2,13 +2,15 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { CreateItemPedidoDto } from '../item_pedido/dto/create-item_pedido.dto';
-import { VerifyItemPedidoDto } from '../item_pedido/dto/verify-item_pedido.dto';
+import { CheckItemPedidoDto } from '../item_pedido/dto/check-item_pedido.dto';
+import { ResponseItemPedidoDto } from '../item_pedido/dto/response-item_pedido.dto'
 import { uuidv7 } from 'uuidv7';
 // import { HttpService } from '@nestjs/axios';
 import got from 'got';
 import { EnderecoDeEntregaService } from '../endereco_de_entrega/endereco_de_entrega.service';
 import { PrismaService } from '../database/prisma/prisma.service';
-import { ItemPedidoService } from '../item_pedido/item_pedido.service';
+import { item_pedido } from '../generated/prisma/browser';
+import { Prisma as PrismaClient, item_pedido as ItemPedidoModel } from '../generated/prisma/client.js';
 
 @Injectable()
 export class PedidoService {
@@ -16,7 +18,6 @@ export class PedidoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly entrega: EnderecoDeEntregaService,
-    private readonly item: ItemPedidoService
   ){}
 
   /**
@@ -28,36 +29,55 @@ export class PedidoService {
     // Como o UUID do usuário virá da API de carrinho, pulamos a etapa de validação do mesmo, podemos apenas validar o carrinho (por segurança).
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
     try {
-      const endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id);
+      const endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
+
       if(!endereco){
         throw new NotFoundException('Enderenço não encontrado');
       }
       const pedidoUuid = uuidv7(); // Gera um UUID para o pedido
+
       // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
-      const itensValidados: CreateItemPedidoDto[] = [];
-      const urlProduto = 'http://localhost:3001/produtos/verificar'; // substituir pelo real
+      const itenspedido: CheckItemPedidoDto[] = [];
       for (const item of createPedidoDto.itens_pedido) {
+        const produto : CheckItemPedidoDto = {
+              produto_id!: item.produto_id,
+              produto_quantidade!: item.produto_quantidade
+        }
+        itenspedido.push(produto);
+      }
 
+      
       try {
-
-        const response: any = await got(urlProduto, {
-          header: {
-            produto_id: item.produto_id
-          },
-          responseType: 'json'
-        });
+        const urlProduto = 'http://localhost:3001/produtos/verificar/'; // substituir pelo real
+        
+        const response = await got.post<ResponseItemPedidoDto>(
+          urlProduto,
+          {
+            json: {
+              itenspedido
+            },
+            responseType: 'json'
+          }
+        );
 
         const produto = response.body;
         
         
         if (produto && produto.disponivel) {
 
-          itensValidados.push({
+          const model : Omit<ItemPedidoModel,
+          'item_pedido_id'
+          |'endereco_created_at' 
+          | 'endereco_updated_at'> = {
+            
             pedido_uuid: pedidoUuid,
-            produto_id: produto.id,
+            produto_id: item.produto_id,
             produto_nome: produto.nome,
             produto_preco: produto.preco,
             item_quantidade: item.item_quantidade
+          }
+          itensValidados.push({
+            ...model;
           });
 
         }
