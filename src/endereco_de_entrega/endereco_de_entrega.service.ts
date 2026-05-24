@@ -53,6 +53,7 @@ export class EnderecoDeEntregaService {
             endereco_uf: data.uf? data.uf.trim().toUpperCase() : '',
         }; 
         return await this.prisma.endereco_de_entrega.create({ data :model });
+        
     } catch (e) {
         throw new Error(`Erro ao criar endereço de entrega: ${e.message}`);
     }

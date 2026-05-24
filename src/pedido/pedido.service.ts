@@ -10,7 +10,9 @@ import got from 'got';
 import { EnderecoDeEntregaService } from '../endereco_de_entrega/endereco_de_entrega.service';
 import { PrismaService } from '../database/prisma/prisma.service';
 import { item_pedido } from '../generated/prisma/browser';
-import { Prisma as PrismaClient, item_pedido as ItemPedidoModel } from '../generated/prisma/client.js';
+import { Prisma as PrismaClient, item_pedido as ItemPedidoModel, pedido as PedidoModel } from '../generated/prisma/client.js';
+import { ItemPedidoService } from '../item_pedido/item_pedido.service';
+
 
 @Injectable()
 export class PedidoService {
@@ -18,101 +20,97 @@ export class PedidoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly entrega: EnderecoDeEntregaService,
-  ){}
+    private readonly produto: ItemPedidoService
+  ) { }
 
   /**
    * Recebe o id do usuário e uma string de itens do pedido e retorna a confirmação de criação do pedido. 
    * @param createPedidoDto 
    * @returns 
    */
-  async create(user: string, createPedidoDto: CreatePedidoDto) {
+  async create(user: string, createPedidoDto: CreatePedidoDto): Promise<PedidoModel> {
     // Como o UUID do usuário virá da API de carrinho, pulamos a etapa de validação do mesmo, podemos apenas validar o carrinho (por segurança).
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
     try {
       const endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
 
-      if(!endereco){
+      if (!endereco) {
         throw new NotFoundException('Enderenço não encontrado');
       }
       const pedidoUuid = uuidv7(); // Gera um UUID para o pedido
 
-      // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
-      const itenspedido: CheckItemPedidoDto[] = [];
-      for (const item of createPedidoDto.itens_pedido) {
-        const produto : CheckItemPedidoDto = {
-              produto_id!: item.produto_id,
-              produto_quantidade!: item.produto_quantidade
-        }
-        itenspedido.push(produto);
-      }
 
-      
-      try {
-        const urlProduto = 'http://localhost:3001/produtos/verificar/'; // substituir pelo real
-        
-        const response = await got.post<ResponseItemPedidoDto>(
-          urlProduto,
-          {
-            json: {
-              itenspedido
-            },
-            responseType: 'json'
-          }
-        );
+        // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
+        const produtosPedido: Omit<CreateItemPedidoDto,
+        'pedido_uuid'>[] = [];
 
-        const produto = response.body;
-        
-        
-        if (produto && produto.disponivel) {
-
-          const model : Omit<ItemPedidoModel,
-          'item_pedido_id'
-          |'endereco_created_at' 
-          | 'endereco_updated_at'> = {
-            
-            pedido_uuid: pedidoUuid,
+        for (const item of createPedidoDto.itens_pedido) {
+          const produto: Omit<CreateItemPedidoDto,
+              'pedido_uuid'> = {
             produto_id: item.produto_id,
-            produto_nome: produto.nome,
-            produto_preco: produto.preco,
-            item_quantidade: item.item_quantidade
+            item_quantidade: item.item_quantidade,
+            produto_nome: item.produto_nome,
+            produto_preco: item.produto_preco,
           }
-          itensValidados.push({
-            ...model;
-          });
-
+          produtosPedido.push(produto);
+        }
+        
+        const createProdutosPedido: ItemPedidoModel[] = await this.produto.create(pedidoUuid, produtosPedido);
+        if (!createProdutosPedido || createProdutosPedido.length === 0) {
+          throw new BadRequestException('Não foi possível criar os itens do pedido');
         }
 
-      } catch (error) {
+        const pedido: PedidoModel = {
+          pedido_uuid: pedidoUuid,
+          pedido_usuario_uuid: user,
+          pedido_endereco_uuid: createPedidoDto.endereco_id,
+          pedido_status: 'PENDENTE',
+        };
 
-        // Ignora item inválido e continua
-        console.error(
-          `Erro ao validar produto ${item.produto_id}`,
-          error.message
-        );
+        // const urlProduto = 'http://localhost:3001/produtos/verificar/'; // substituir pelo real
 
-      }
+        // const response = await got.post<ResponseItemPedidoDto>(
+        //   urlProduto,
+        //   {
+        //     json: {
+        //       itenspedido
+        //     },
+        //     responseType: 'json'
+        //   }
+        // );
 
-    }
+        // const produto = response.body;
+        
+        
+        return this.prisma.pedido.create({
+          data: pedido
+        });
 
-      return `This action adds a new pedido for user ${user} with the following details: ${JSON.stringify(createPedidoDto)}`;
-    } catch (error) {
+    } catch(error) {
       throw new Error('Error creating pedido');
     }
   }
 
-  findAll() {
-    return `This action returns all pedido`;
+findAll(userId: string): Promise<PedidoModel[]> {
+  try{
+    return this.prisma.pedido.findMany({
+      where: { usuario_uuid: userId },
+    });
+  } catch (error){
+    throw new BadRequestException(`Não foi possivel encontrar os pedidos ${error}`);
   }
+  
+}
 
-  findOne(id: number) {
-    return `This action returns a #${id} pedido`;
-  }
+findOne(id: number) {
+  return `This action returns a #${id} pedido`;
+}
 
-  update(id: number, updatePedidoDto: UpdatePedidoDto) {
-    return `This action updates a #${id} pedido`;
-  }
+update(id: number, updatePedidoDto: UpdatePedidoDto) {
+  return `This action updates a #${id} pedido`;
+}
 
-  remove(id: number) {
-    return `This action removes a #${id} pedido`;
-  }
+remove(id: number) {
+  return `This action removes a #${id} pedido`;
+}
 }
