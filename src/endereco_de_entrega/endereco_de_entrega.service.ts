@@ -109,13 +109,13 @@ export class EnderecoDeEntregaService {
     async findOne(user: string, input: string): Promise<EnderecoEntregaModel | null> {
             // Verifica se o usuario_uuid é válido
             // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
-            const endereco = await this.prisma.endereco_de_entrega.findFirst({ 
-                where: { endereco_uuid: input},
+            const endereco = await this.prisma.endereco_de_entrega.findUnique({ 
+                where: { endereco_uuid: input },
             })
             .catch((e) => {
                 throw new Error(`Erro ao buscar endereço de entrega: ${e.message}`);
             });
-            console.log('Endereço encontrado:', endereco);
+
             if (!endereco) {
                 throw new Error('Endereço de entrega não encontrado');
             }

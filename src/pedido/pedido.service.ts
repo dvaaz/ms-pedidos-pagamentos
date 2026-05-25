@@ -36,11 +36,10 @@ export class PedidoService {
   async create(user: string, createPedidoDto: CreatePedidoDto): Promise<PedidoModel> {
     // Como o UUID do usuário virá da API de carrinho, pulamos a etapa de validação do mesmo, podemos apenas validar o carrinho (por segurança).
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
-    console.log('Validando o endereco:', createPedidoDto.endereco_id);
     let endereco: EnderecoEntregaModel | null = null;
     if (createPedidoDto.endereco_id) {
     endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
-    console.log('Endereco encontrado:', endereco);
+
       if (!endereco || endereco.endereco_uuid !== createPedidoDto.endereco_id) {
         throw new NotFoundException('Endereço não encontrado');
       }
@@ -63,7 +62,16 @@ export class PedidoService {
 
     // cria GUID do pedido
     const pedidoUuid = uuidv7(); // Gera um UUID para o pedido utilizando a função uuid versao 7
+    
 
+    const pedido: Omit<PedidoModel,
+       'pedido_valor_total' | 'status_pedido_id' |
+       'pedido_created_at' | 'pedido_updated_at'> = {
+        pedido_uuid: pedidoUuid,
+        usuario_uuid: user,
+        pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
+        endereco_de_entrega_uuid: endereco?.endereco_uuid || '',
+      };
 
       // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
       const produtosPedido: Omit<CreateItemPedidoDto, 'pedido_uuid'>[] = [];
@@ -77,17 +85,23 @@ export class PedidoService {
         }
         produtosPedido.push(produto);
       }
-
-
-      const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
-      if (!createProdutosPedido || createProdutosPedido.length === 0) {
-        throw new BadRequestException('Não foi possível criar os itens do pedido');
-      }
-
+      
       // Outra possibilidade seria criar o pedido primeiro, e depois criar os itens do pedido, associando-os ao pedido criado ou caso nao seja possivel confirmar nenhum produto anexar o status 'REJEITADO'.
       // No entanto, isso exigiria uma transação para garantir a atomicidade da operação, o que pode ser mais complexo de implementar. 
       // Para simplificar, optei por criar os itens do pedido primeiro e depois criar o pedido associando os itens criados.
 
+      const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
+      
+      if (!createProdutosPedido || createProdutosPedido.length === 0) {
+        const statusPedido = await this.prisma.status_pedido.findFirst({
+        where: {
+          status_pedido_nome: 'REJEITADO',
+        },
+        select: {
+          status_pedido_id: true,
+        },
+      });  
+      }
 
       const statusPedido = await this.prisma.status_pedido.findFirst({
         where: {
@@ -98,23 +112,35 @@ export class PedidoService {
         },
       });
 
+
       if (!statusPedido) {
         throw new NotFoundException('Status do pedido não encontrado');
       }
 
-      const pedido: Omit<PedidoModel,
-        'pedido_created_at' | 'pedido_updated_at'> = {
-        pedido_uuid: pedidoUuid,
-        usuario_uuid: user,
-        pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
-        endereco_de_entrega_uuid: endereco?.endereco_uuid || '',
-        pedido_valor_total: valorTotalDoPedido,
-        status_pedido_id: statusPedido.status_pedido_id,
-      };
-
-      return await this.prisma.pedido.create({
-        data: pedido
+      // Incluir o valor total do pedido dos itens que foram ao pedido
+      // 
+      const updatePedido = this.prisma.pedido.update({
+        where: { pedido_uuid: pedidoUuid },
+        data: { 
+          pedido_valor_total: valorTotalDoPedido,
+          status_pedido_id: statusPedido.status_pedido_id
+         },
+         select:{
+          ...
+         }
       });
+
+      
+      const response: PedidoModel | null = await this.prisma.pedido.findUnique({
+        where: { pedido_uuid: pedidoUuid }
+      });
+      if (!response) {
+        throw new NotFoundException(`Pedido com o UUID ${pedidoUuid} não foi encontrado.`);
+      }
+
+      
+
+      return response;
 
   }
 
@@ -185,10 +211,6 @@ export class PedidoService {
     if (!statusAtualizado) {
       throw new NotFoundException(`Não foi possível atualizar o status do pedido com o UUID ${id}.`);
     }
-
-
-
-
   }
 
   /**

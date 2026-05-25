@@ -45,7 +45,7 @@ export class EnderecoDeEntregaController {
     // @Req() req: any // Substitua 'any' pelo tipo correto do request, se disponível
   ) {
     // const user = req.user; // Supondo que o middleware de autenticação tenha adicionado o usuário ao request
-    return this.enderecoDeEntregaService.findOne(id, user);
+    return this.enderecoDeEntregaService.findOne(user, id);
   }
 
   @Patch(':id/:user')

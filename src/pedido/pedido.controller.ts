@@ -3,15 +3,16 @@ import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { ApiOperation } from '@nestjs/swagger';
+import {
+  pedido as PedidoModel,
+} from '../generated/prisma/client.js';
 
 @Controller('pedido')
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
   @Post(':userId')
-  create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) {
-    console.log('Criando pedido para usuário:', userId);
-    console.log('Dados do pedido:', createPedidoDto);
+  create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) : Promise<PedidoModel> {
     return this.pedidoService.create(userId,createPedidoDto);
   }
 

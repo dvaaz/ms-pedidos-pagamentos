@@ -22,6 +22,8 @@ export class ItemPedidoService {
       // No Prisma de SQL não há uma função imbutida que retorne os itens criados, então utilizarei o $transaction que apesar de mais lento, para esse trabalho será o suficiente
       try{
       
+        
+
       const itensDoPedido = await this.prisma.$transaction(
         createItemPedidoDto.map((item) => this.prisma.item_pedido.create({
           data: {
@@ -37,7 +39,7 @@ export class ItemPedidoService {
       
      const valorTotalDoPedido = itensDoPedido.reduce(
       (total, item) => total + item.item_pedido_total_preco, 0);
-
+      
       return [itensDoPedido, valorTotalDoPedido]; //
     
     } catch (error){
