@@ -1,15 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { CreateItemPedidoDto } from '../item_pedido/dto/create-item_pedido.dto';
-import { CheckItemPedidoDto } from '../item_pedido/dto/check-item_pedido.dto';
-import { ResponseItemPedidoDto } from '../item_pedido/dto/response-item_pedido.dto'
 import { uuidv7 } from 'uuidv7';
-// import { HttpService } from '@nestjs/axios';
 import got from 'got';
 import { EnderecoDeEntregaService } from '../endereco_de_entrega/endereco_de_entrega.service';
 import { PrismaService } from '../database/prisma/prisma.service';
-import { item_pedido } from '../generated/prisma/browser';
 import { Prisma as PrismaClient, item_pedido as ItemPedidoModel, pedido as PedidoModel } from '../generated/prisma/client.js';
 import { ItemPedidoService } from '../item_pedido/item_pedido.service';
 
@@ -34,83 +30,109 @@ export class PedidoService {
     try {
       const endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
 
-      if (!endereco) {
+      if (!endereco || endereco.endereco_uuid !== createPedidoDto.endereco_id) {
         throw new NotFoundException('Enderenço não encontrado');
       }
       const pedidoUuid = uuidv7(); // Gera um UUID para o pedido
 
 
-        // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
-        const produtosPedido: Omit<CreateItemPedidoDto,
-        'pedido_uuid'>[] = [];
+      // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
+      const produtosPedido: Omit<CreateItemPedidoDto, 'pedido_uuid'>[] = [];
 
-        for (const item of createPedidoDto.itens_pedido) {
-          const produto: Omit<CreateItemPedidoDto,
-              'pedido_uuid'> = {
-            produto_id: item.produto_id,
-            item_quantidade: item.item_quantidade,
-            produto_nome: item.produto_nome,
-            produto_preco: item.produto_preco,
-          }
-          produtosPedido.push(produto);
+      for (const item of createPedidoDto.itens_pedido) {
+        const produto: Omit<CreateItemPedidoDto, 'pedido_uuid'> = {
+          produto_id: item.produto_id,
+          item_quantidade: item.item_quantidade,
+          produto_nome: item.produto_nome,
+          produto_preco: item.produto_preco,
         }
-        
-        const createProdutosPedido: ItemPedidoModel[] = await this.produto.create(pedidoUuid, produtosPedido);
-        if (!createProdutosPedido || createProdutosPedido.length === 0) {
-          throw new BadRequestException('Não foi possível criar os itens do pedido');
-        }
+        produtosPedido.push(produto);
+      }
 
-        const pedido: PedidoModel = {
-          pedido_uuid: pedidoUuid,
-          pedido_usuario_uuid: user,
-          pedido_endereco_uuid: createPedidoDto.endereco_id,
-          pedido_status: 'PENDENTE',
-        };
+      const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
+      if (!createProdutosPedido || createProdutosPedido.length === 0) {
+        throw new BadRequestException('Não foi possível criar os itens do pedido');
+      }
 
-        // const urlProduto = 'http://localhost:3001/produtos/verificar/'; // substituir pelo real
+      const pedido: Omit<PedidoModel,
+        'pedido_created_at' | 'pedido_updated_at'> = {
+        pedido_uuid: pedidoUuid,
+        usuario_uuid: user,
+        pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
+        endereco_de_entrega_uuid: endereco.endereco_uuid,
+        pedido_valor_total: valorTotalDoPedido,
+        status_pedido_id: 1, // Status inicial do pedido, pode ser alterado posteriormente
+      };
 
-        // const response = await got.post<ResponseItemPedidoDto>(
-        //   urlProduto,
-        //   {
-        //     json: {
-        //       itenspedido
-        //     },
-        //     responseType: 'json'
-        //   }
-        // );
 
-        // const produto = response.body;
-        
-        
-        return this.prisma.pedido.create({
-          data: pedido
-        });
+      // const urlProduto = 'http://localhost:3001/produtos/verificar/'; // substituir pelo real
 
-    } catch(error) {
+      // const response = await got.post<ResponseItemPedidoDto>(
+      //   urlProduto,
+      //   {
+      //     json: {
+      //       itenspedido
+      //     },
+      //     responseType: 'json'
+      //   }
+      // );
+
+      // const produto = response.body;
+
+
+      return await this.prisma.pedido.create({
+        data: pedido
+      });
+
+
+
+    } catch (error) {
       throw new Error('Error creating pedido');
     }
   }
 
-findAll(userId: string): Promise<PedidoModel[]> {
-  try{
-    return this.prisma.pedido.findMany({
-      where: { usuario_uuid: userId },
-    });
-  } catch (error){
-    throw new BadRequestException(`Não foi possivel encontrar os pedidos ${error}`);
+  async findAll(userId: string): Promise<PedidoModel[]> {
+    try {
+      return await this.prisma.pedido.findMany({
+        where: { usuario_uuid: userId },
+      });
+
+    } catch (error) {
+      throw new BadRequestException(`Não foi possivel encontrar os pedidos ${error}`);
+    }
+
   }
-  
-}
 
-findOne(id: number) {
-  return `This action returns a #${id} pedido`;
-}
+  async findOne(id: string): Promise<PedidoModel> {
+    try {
+      const pedido = await this.prisma.pedido.findUnique({
+        where: { pedido_uuid: id },
+      });
 
-update(id: number, updatePedidoDto: UpdatePedidoDto) {
-  return `This action updates a #${id} pedido`;
-}
+      // Se o Prisma não encontrar, ele retorna null. Tratamos com a Exception nativa do NestJS
+      if (!pedido) {
+        throw new NotFoundException(`Pedido com o UUID ${id} não foi encontrado.`);
+      }
 
-remove(id: number) {
-  return `This action removes a #${id} pedido`;
-}
+      return pedido;
+    } catch (error) {
+      // Se a exceção já for do NestJS (o NotFoundException acima), apenas a repasse adiante
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      // Erros de banco de dados (ex: string de UUID malformada ou falha de conexão) caem aqui
+      throw new InternalServerErrorException(`Erro ao buscar o pedido: ${error.message}`);
+    }
+  }
+
+
+
+  update(id: number, updatePedidoDto: UpdatePedidoDto) {
+    return `This action updates a #${id} pedido`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} pedido`;
+  }
 }

@@ -27,7 +27,7 @@ const config: runtime.GetPrismaClientConfig = {
     "types": {}
   },
   "parameterizationSchema": {
-    "strings": [],create
+    "strings": [],
     "graph": ""
   }
 }

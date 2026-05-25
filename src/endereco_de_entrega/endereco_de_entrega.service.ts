@@ -30,9 +30,7 @@ export class EnderecoDeEntregaService {
         }
         // Verifica se o usuario_uuid é válido
         // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
-        if (!data.destinatario) {
-            axios
-        }
+ 
         // Verifica se o usuario possui no máximo 3 endereços cadastrados
         const count = await this.prisma.endereco_de_entrega.count({
             where: { endereco_usuario_uuid: data.destinatario.trim() }
