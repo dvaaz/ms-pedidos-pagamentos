@@ -10,11 +10,16 @@ async function bootstrap() {
     .setTitle('API de Pedidos e Pagamentos')
     .setDescription('API para gerenciamento de pedidos e pagamentos')
     .setVersion('1.0')
-    .addTag('pedidos')
-    .addTag('pagamentos')
     .build();
   const document = SwaggerModule.createDocument(app, config);
+
   SwaggerModule.setup('api', app, document);
+  // gerar json do swagger
+  SwaggerModule.setup('api-json', app, document, {
+    swaggerOptions: {
+      docExpansion: 'none',
+    },
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
