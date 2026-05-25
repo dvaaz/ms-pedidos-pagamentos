@@ -122,7 +122,8 @@ export class PedidoService {
       }
       
       // Erros de banco de dados (ex: string de UUID malformada ou falha de conexão) caem aqui
-      throw new InternalServerErrorException(`Erro ao buscar o pedido: ${error.message}`);
+      const mensagemErro = error instanceof Error ? error.message : String(error);
+      throw new InternalServerErrorException(`Erro ao buscar o pedido: ${mensagemErro}`);
     }
   }
 

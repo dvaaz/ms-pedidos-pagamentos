@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { StatusPagamentoService } from './status_pagamento.service';
+import { status_pagamento as StatusPagamentoModel } from '../generated/prisma/client.js';
 
 @Controller('status_pagamento')
 export class StatusPagamentoController {

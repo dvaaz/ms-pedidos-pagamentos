@@ -7,19 +7,19 @@ import { UpdatePedidoDto } from './dto/update-pedido.dto';
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
-  @Post()
-  create(@Body() createPedidoDto: CreatePedidoDto) {
-    return this.pedidoService.create(createPedidoDto);
+  @Post(':userId')
+  create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) {
+    return this.pedidoService.create(userId,createPedidoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.pedidoService.findAll();
+  @Get(':userId')
+  findAll(@Param('userId') userId: string) {
+    return this.pedidoService.findAll(userId);
   }
 
-  @Get(':id')
+  @Get('findone/:id')
   findOne(@Param('id') id: string) {
-    return this.pedidoService.findOne(+id);
+    return this.pedidoService.findOne(id);
   }
 
   @Patch(':id')

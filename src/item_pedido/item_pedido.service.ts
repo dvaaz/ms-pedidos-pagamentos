@@ -46,7 +46,7 @@ export class ItemPedidoService {
       
   }
 
-  async findAll(pedidoId: string) {
+  async findAll(pedidoId: string) : Promise<ItemPedidoModel[]> {
     try{
       return this.prisma.item_pedido.findMany({
         where: { pedido_uuid: pedidoId },
@@ -56,8 +56,10 @@ export class ItemPedidoService {
     }
   }
 
-  findOne(pedidoId: string, itemId: string) { // A busca por item pedido será feita através do id do item e do pedido
-
+  async findOne(itemId: number) : Promise<ItemPedidoModel | null> { // A busca por item pedido será feita através do id do item e do pedido
+    return this.prisma.item_pedido.findFirst({
+      where: { item_pedido_id: itemId },
+    });
   }
 
   update(id: number, updateItemPedidoDto: UpdateItemPedidoDto) { // não haverá update de itemPedido, mas vamos deixar esse método aqui para manter a estrutura do CRUD
