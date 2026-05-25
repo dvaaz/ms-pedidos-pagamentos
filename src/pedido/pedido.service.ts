@@ -11,7 +11,8 @@ import {
   Prisma as PrismaClient,
   item_pedido as ItemPedidoModel,
   pedido as PedidoModel,
-  status_pedido as StatusPedidoModel
+  status_pedido as StatusPedidoModel,
+  endereco_de_entrega as EnderecoEntregaModel
 } from '../generated/prisma/client.js';
 import { ItemPedidoService } from '../item_pedido/item_pedido.service';
 import { StatusPedidoService } from '../status_pedido/status_pedido.service.js';
@@ -35,13 +36,33 @@ export class PedidoService {
   async create(user: string, createPedidoDto: CreatePedidoDto): Promise<PedidoModel> {
     // Como o UUID do usuário virá da API de carrinho, pulamos a etapa de validação do mesmo, podemos apenas validar o carrinho (por segurança).
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
-    try {
-      const endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
-
+    console.log('Validando o endereco:', createPedidoDto.endereco_id);
+    let endereco: EnderecoEntregaModel | null = null;
+    if (createPedidoDto.endereco_id) {
+    endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
+    console.log('Endereco encontrado:', endereco);
       if (!endereco || endereco.endereco_uuid !== createPedidoDto.endereco_id) {
-        throw new NotFoundException('Enderenço não encontrado');
+        throw new NotFoundException('Endereço não encontrado');
       }
-      const pedidoUuid = uuidv7(); // Gera um UUID para o pedido
+    }
+    // busca o primeiroo endereco do usuario.
+    if (!createPedidoDto.endereco_id) {
+      const enderecoEncontrado = await this.prisma.endereco_de_entrega.findFirst({
+        where: { endereco_usuario_uuid: user },
+      });
+      if (enderecoEncontrado) {
+        endereco = enderecoEncontrado;
+      }
+    }
+    
+
+    // Confirma que o pedido não está vazio
+    if (!createPedidoDto.itens_pedido || createPedidoDto.itens_pedido.length === 0) {
+      throw new BadRequestException('O pedido deve conter pelo menos um item');
+    }
+
+    // cria GUID do pedido
+    const pedidoUuid = uuidv7(); // Gera um UUID para o pedido utilizando a função uuid versao 7
 
 
       // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
@@ -86,7 +107,7 @@ export class PedidoService {
         pedido_uuid: pedidoUuid,
         usuario_uuid: user,
         pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
-        endereco_de_entrega_uuid: endereco.endereco_uuid,
+        endereco_de_entrega_uuid: endereco?.endereco_uuid || '',
         pedido_valor_total: valorTotalDoPedido,
         status_pedido_id: statusPedido.status_pedido_id,
       };
@@ -95,11 +116,6 @@ export class PedidoService {
         data: pedido
       });
 
-
-
-    } catch (error) {
-      throw new Error('Error creating pedido');
-    }
   }
 
   async findAll(userId: string): Promise<PedidoModel[]> {

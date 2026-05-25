@@ -10,6 +10,8 @@ export class PedidoController {
 
   @Post(':userId')
   create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) {
+    console.log('Criando pedido para usuário:', userId);
+    console.log('Dados do pedido:', createPedidoDto);
     return this.pedidoService.create(userId,createPedidoDto);
   }
 

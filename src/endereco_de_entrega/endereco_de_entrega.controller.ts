@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Put } from '@nestjs/common';
 import { EnderecoDeEntregaService } from './endereco_de_entrega.service';
 import { CreateEnderecoDeEntregaDto } from './dto/create-endereco_de_entrega.dto';
 import { endereco_de_entrega as EnderecoEntregaModel } from '../generated/prisma/client';
+import { UpdateEnderecoDeEntregaDto } from './dto/update-endereco_de_entrega.dto';
 
 @Controller('endereco')
 export class EnderecoDeEntregaController {
@@ -48,7 +49,7 @@ export class EnderecoDeEntregaController {
   }
 
   @Patch(':id/:user')
-  update(@Param('id') id: string, @Param('user') user: string, @Body() updateEnderecoDeEntregaDto: any) {
+  update(@Param('id') id: string, @Param('user') user: string, @Body() updateEnderecoDeEntregaDto: UpdateEnderecoDeEntregaDto) {
     return this.enderecoDeEntregaService.update(id, user, updateEnderecoDeEntregaDto);
   }
 

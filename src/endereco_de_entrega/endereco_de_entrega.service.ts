@@ -3,7 +3,7 @@ import { uuidv7 } from 'uuidv7'; // Importa a função uuidv7 para gerar UUIDs
 import { PrismaService } from 'src/database/prisma/prisma.service';
 import { Prisma as PrismaClient, endereco_de_entrega as EnderecoEntregaModel } from '../generated/prisma/client.js';
 import { CreateEnderecoDeEntregaDto as createDto } from './dto/create-endereco_de_entrega.dto';
-import { UpdateEnderecoDeEntregaDto as updateDto } from './dto/update-endereco_de_entrega.dto';
+import { UpdateEnderecoDeEntregaDto as updateDto, UpdateEnderecoDeEntregaDto } from './dto/update-endereco_de_entrega.dto';
 
 
 @Injectable()
@@ -106,16 +106,25 @@ export class EnderecoDeEntregaService {
      * @param input 
      * @returns
      */
-    async findOne(user: string, input?: string): Promise<EnderecoEntregaModel | null> {
-        try {
+    async findOne(user: string, input: string): Promise<EnderecoEntregaModel | null> {
             // Verifica se o usuario_uuid é válido
             // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
-            return await this.prisma.endereco_de_entrega.findUnique({ 
-                where: { endereco_uuid: input, endereco_usuario_uuid: user }
+            const endereco = await this.prisma.endereco_de_entrega.findFirst({ 
+                where: { endereco_uuid: input},
+            })
+            .catch((e) => {
+                throw new Error(`Erro ao buscar endereço de entrega: ${e.message}`);
             });
-        } catch (e) {
-            throw new Error(`Erro ao buscar endereço de entrega: ${e.message}`);
-        }
+            console.log('Endereço encontrado:', endereco);
+            if (!endereco) {
+                throw new Error('Endereço de entrega não encontrado');
+            }
+            if (endereco.endereco_usuario_uuid !== user) {
+                throw new Error('Endereço de entrega não pertence ao usuário');
+            }
+            
+            return endereco;
+        
     }
 
     /**
@@ -124,7 +133,7 @@ export class EnderecoDeEntregaService {
      * @param data 
      * @returns
      */
-    async update(id: string, user: string, data: updateDto): Promise<EnderecoEntregaModel> {
+    async update(id: string, user: string, data: UpdateEnderecoDeEntregaDto): Promise<EnderecoEntregaModel> {
         try {
             // Verifica se o endereço existe antes de tentar atualizar
             const existing = await this.prisma.endereco_de_entrega.findUnique({ 
@@ -137,8 +146,12 @@ export class EnderecoDeEntregaService {
 
             const updateData: PrismaClient.endereco_de_entregaUpdateInput = {};
 
+
                 if (data.cep !== undefined) {
                     updateData.endereco_cep = createDto.cepLimpo(data.cep);
+                    if (updateData.endereco_cep === '') {
+                        throw new Error('O CEP não pode ser vazio');
+                    }
                 }
                 if (data.logradouro !== undefined) {
                     updateData.endereco_logradouro = data.logradouro.trim();
