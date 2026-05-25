@@ -1,11 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateEnderecoDeEntregaDto {
-    @ApiProperty({ description: 'ID do cliente', required: true })
-    cliente_id!: string;
     @ApiProperty({ description: 'UF do endereço de entrega', required: false })
     uf?: string;
-    @ApiProperty({ description: 'Destinatário do endereço de entrega', required: false })
+    @ApiProperty({ description: 'UUID do USUARIO', required: false })
     destinatario?: string;
     @ApiProperty({ description: 'Município do endereço de entrega', required: false })
     municipio?: string;

@@ -13,8 +13,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('api', app, document);
-  // gerar json do swagger
+  SwaggerModule.setup('swagger', app, document);
+
+  // api json do swagger
   SwaggerModule.setup('api-json', app, document, {
     swaggerOptions: {
       docExpansion: 'none',

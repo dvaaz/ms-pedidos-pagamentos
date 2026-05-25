@@ -5,12 +5,59 @@ import { PrismaService } from '../database/prisma/prisma.service';
 import { Prisma as PrismaClient, status_pedido as StatusPedidoModel} from '../generated/prisma/client.js';
 
 
-
+// A única funcao do servico de status é gerenciar os pedidos no proprio sistema, o controller sera apagado ou reduzido a um endpoint de consulta, para adm.
 @Injectable()
 export class StatusPedidoService {
   constructor(
     private readonly prisma: PrismaService
   ) {}
+
+
+  /**
+   * Função para fazer a mudança do status do pedido de acordo com a lógica de negócio. retorna o id do status atualizado
+   * 
+   */
+  async updateStatusPedido(id: number) : Promise<StatusPedidoModel['status_pedido_id']> {
+    // Aqui a função receberia o id do pedido e faria a mudança de status de acordo com a lógica de negócio, por exemplo, se o pedido for criado, ele recebe o status 'PENDENTE', depois de um tempo ele muda para 'ACEITO' ou 'REJEITADO' dependendo da validação do carrinho e do pagamento, depois disso ele pode mudar para 'EM PREPARAÇÃO', 'EM ENTREGA' e por fim 'ENTREGUE'.
+    // A implementação dessa função depende muito da lógica de negócio definida para o sistema, então deixarei ela em branco por enquanto.
+    if (!id) {
+      throw new Error('O ID do status do pedido é obrigatório');
+    }
+    const status = await this.prisma.status_pedido.findUnique({
+      where: { status_pedido_id: id },
+      select: { status_pedido_id: true, status_pedido_nome: true }
+    });
+    if (!status || !status.status_pedido_id || !status.status_pedido_nome) {
+      throw new Error('Status do pedido não encontrado');
+    }
+
+    // lógica de atualização do status do pedido, por exemplo:
+    const arrayDeStatusRegistrados = ['CANCELADO', 'DEVOLUCAO', 'PENDENTE', 'ACEITO', 'APROVADO', 'SEPARACAO', 'ENVIADO', 'ENTREGUE'];
+    const indexDoStatusAtual = arrayDeStatusRegistrados.indexOf(status.status_pedido_nome);
+     if (indexDoStatusAtual === -1) {
+      throw new Error(`Status do pedido inválido.`);
+    }
+    if (status.status_pedido_nome === arrayDeStatusRegistrados[0] || status.status_pedido_nome === arrayDeStatusRegistrados[1]) {
+      throw new Error(`Não é permitido atualizar o status do pedido.`);
+    }
+    if (status.status_pedido_nome === arrayDeStatusRegistrados[arrayDeStatusRegistrados.length - 1]) {
+      throw new Error(`O pedido já foi entregue, não é permitido atualizar o status do pedido.`);
+    }
+    const novoStatus = arrayDeStatusRegistrados[indexDoStatusAtual + 1];
+
+    await this.prisma.status_pedido.findFirst({
+      where: { status_pedido_nome: novoStatus },
+      select: { status_pedido_id: true }
+    }).then((statusEncontrado) => {
+      if (!statusEncontrado || !statusEncontrado.status_pedido_id) {
+        throw new Error(`Status do pedido inválido.`);
+      }
+      return statusEncontrado.status_pedido_id;
+    });
+
+
+    return status.status_pedido_id;
+  }
 
   /**
    * Cria novo método de pagamento

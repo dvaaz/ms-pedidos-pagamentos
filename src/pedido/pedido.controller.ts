@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('pedido')
 export class PedidoController {
@@ -22,13 +23,15 @@ export class PedidoController {
     return this.pedidoService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePedidoDto: UpdatePedidoDto) {
-    return this.pedidoService.update(+id, updatePedidoDto);
+
+  @Patch('update-endereco/:id')
+  @ApiOperation({ summary: 'Atualiza o endereço de entrega de um pedido com outro já existente' })
+  updateEndereco(@Param('id') id: string, @Body() enderecoId: string) {
+    return this.pedidoService.updateEndereco(id, enderecoId);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.pedidoService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.pedidoService.remove(+id);
+  // }
 }
