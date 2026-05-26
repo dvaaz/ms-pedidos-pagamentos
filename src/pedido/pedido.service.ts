@@ -16,6 +16,7 @@ import {
 } from '../generated/prisma/client.js';
 import { ItemPedidoService } from '../item_pedido/item_pedido.service';
 import { StatusPedidoService } from '../status_pedido/status_pedido.service.js';
+import { item_pedido } from '../../dist/src/generated/prisma/browser';
 
 
 @Injectable()
@@ -38,7 +39,7 @@ export class PedidoService {
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
     let endereco: EnderecoEntregaModel | null = null;
     if (createPedidoDto.endereco_id) {
-    endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
+      endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
 
       if (!endereco || endereco.endereco_uuid !== createPedidoDto.endereco_id) {
         throw new NotFoundException('Endereço não encontrado');
@@ -53,7 +54,7 @@ export class PedidoService {
         endereco = enderecoEncontrado;
       }
     }
-    
+
 
     // Confirma que o pedido não está vazio
     if (!createPedidoDto.itens_pedido || createPedidoDto.itens_pedido.length === 0) {
@@ -75,75 +76,112 @@ export class PedidoService {
     if (!statusPedido) {
       throw new NotFoundException('Status do pedido não encontrado');
     }
-    
+
     // Cria o pedido para poder criar os itens
     const pedido = {
-        pedido_uuid: pedidoUuid,
-        usuario_uuid: user,
-        pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
-        endereco_de_entrega_uuid: endereco?.endereco_uuid || '',
-        pedido_valor_total: 0,
-        status_pedido_id: statusPedido.status_pedido_id,
-      };
+      pedido_uuid: pedidoUuid,
+      usuario_uuid: user,
+      pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
+      endereco_de_entrega_uuid: endereco?.endereco_uuid || '',
+      pedido_valor_total: 0,
+      status_pedido_id: statusPedido.status_pedido_id,
+    };
 
-      // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
-      const createPedido = await this.prisma.pedido.create({
-        data: pedido,
-      });
+    // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
+    const createPedido = await this.prisma.pedido.create({
+      data: pedido,
+    });
 
-      const produtosPedido: Omit<CreateItemPedidoDto, 'pedido_uuid'>[] = [];
+    const produtosPedido: Omit<CreateItemPedidoDto, 'pedido_uuid'>[] = [];
 
-      for (const item of createPedidoDto.itens_pedido) {
-        const produto: Omit<CreateItemPedidoDto, 'pedido_uuid'> = {
-          produto_id: item.produto_id,
-          item_quantidade: item.item_quantidade,
-          produto_nome: item.produto_nome,
-          produto_preco: item.produto_preco,
-        }
-        produtosPedido.push(produto);
+    for (const item of createPedidoDto.itens_pedido) {
+      const produto: Omit<CreateItemPedidoDto, 'pedido_uuid'> = {
+        produto_id: item.produto_id,
+        item_quantidade: item.item_quantidade,
+        produto_nome: item.produto_nome,
+        produto_preco: item.produto_preco,
       }
-      
-      // Outra possibilidade seria criar o pedido primeiro, e depois criar os itens do pedido, associando-os ao pedido criado ou caso nao seja possivel confirmar nenhum produto anexar o status 'REJEITADO'.
-      // No entanto, isso exigiria uma transação para garantir a atomicidade da operação, o que pode ser mais complexo de implementar. 
-      // Para simplificar, optei por criar os itens do pedido primeiro e depois criar o pedido associando os itens criados.
+      produtosPedido.push(produto);
+    }
 
-      const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
-      
-      if (!createProdutosPedido || createProdutosPedido.length === 0) {
-        throw new BadRequestException('O pedido deve conter pelo menos um item válido');
+    // Outra possibilidade seria criar o pedido primeiro, e depois criar os itens do pedido, associando-os ao pedido criado ou caso nao seja possivel confirmar nenhum produto anexar o status 'REJEITADO'.
+    // No entanto, isso exigiria uma transação para garantir a atomicidade da operação, o que pode ser mais complexo de implementar. 
+    // Para simplificar, optei por criar os itens do pedido primeiro e depois criar o pedido associando os itens criados.
+
+    const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
+
+    if (!createProdutosPedido || createProdutosPedido.length === 0) {
+      throw new BadRequestException('O pedido deve conter pelo menos um item válido');
+    }
+
+    // Incluir o valor total do pedido dos itens que foram ao pedido
+    // 
+    const response = await this.prisma.pedido.update({
+      where: { pedido_uuid: pedidoUuid },
+      data: {
+        pedido_valor_total: valorTotalDoPedido,
+        status_pedido_id: statusPedido.status_pedido_id
+      },
+      select: {
+        pedido_uuid: true,
+        usuario_uuid: true,
+        pedido_nome_destinatario: true,
+        endereco_de_entrega_uuid: true,
+        pedido_valor_total: true,
+        status_pedido_id: true,
+        pedido_created_at: true,
+        pedido_updated_at: true,
       }
+    });
 
-      // Incluir o valor total do pedido dos itens que foram ao pedido
-      // 
-      const updatePedido = await this.prisma.pedido.update({
-        where: { pedido_uuid: pedidoUuid },
-        data: { 
-          pedido_valor_total: valorTotalDoPedido,
-          status_pedido_id: statusPedido.status_pedido_id
-         },
-         select:{
-          pedido_uuid: true,
-          usuario_uuid: true,
-          pedido_nome_destinatario: true,
-          endereco_de_entrega_uuid: true,
-          pedido_valor_total: true,
-          status_pedido_id: true,
-          pedido_created_at: true,
-          pedido_updated_at: true,
-          }
-        });
-        
 
-      
-      // const response: PedidoModel | null = await this.prisma.pedido.findUnique({
-      //   where: { pedido_uuid: pedidoUuid }
-      // });
-      // if (!response) {
-      //   throw new NotFoundException(`Pedido com o UUID ${pedidoUuid} não foi encontrado.`);
-      // }
-      return updatePedido;
+
+    // const response: PedidoModel | null = await this.prisma.pedido.findUnique({
+    //   where: { pedido_uuid: pedidoUuid }
+    // });
+    // if (!response) {
+    //   throw new NotFoundException(`Pedido com o UUID ${pedidoUuid} não foi encontrado.`);
+    // }
+    return response;
 
   }
+
+  /**
+   * Função para um retorno legivel do pedido criado. Inclui array de itens do pedido e seus devidos preços, nome do status do pedido
+  * @params userGuid, pedidoGuid 
+  */
+  async composePedido(userId: string, pedidoId: string): Promise<FullPedidoDto> {
+    // Busca o pedido e tras dados relacionados (endereço de entrega e status do pedido) para compor o DTO de resposta.
+    const pedido = await this.prisma.pedido.findUnique({
+      where: { pedido_uuid: pedidoId },
+      select: {
+        pedido_uuid: true,
+        pedido_valor_total: true,
+        pedido_status: {
+          select: {
+            status_pedido_nome: true,
+          }
+        },
+        data_criacao: true,
+        endereco_de_entrega: {
+          select: {
+            endereco_cep: true,
+            endereco_uf: true,
+            endereco_municipio: true,
+            endereco_logradouro: true,
+            endereco_numero: true,
+            endereco_complemento: true,
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      throw new N
+    })
+      
+
+  }
+
 
   /**
    * Buscar todos os Pedidos referentes a UM usuario
@@ -194,8 +232,9 @@ export class PedidoService {
   async updateStatusPedido(id: string) {
     const statusAtual = await this.prisma.pedido.findUnique({
       where: { pedido_uuid: id },
-      select: { status_pedido_id: true ,
-         status_pedido: true
+      select: {
+        status_pedido_id: true,
+        status_pedido: true
       },
     });
 
