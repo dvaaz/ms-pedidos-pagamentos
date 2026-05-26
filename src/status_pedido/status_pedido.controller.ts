@@ -8,6 +8,11 @@ import { status_pedido as StatusPedidoModel } from '../generated/prisma/client';
 export class StatusPedidoController {
   constructor(private readonly StatusPedidoService: StatusPedidoService) {}
 
+  // @Post()
+  // create(@Body() createStatusPedidoDto: CreateStatusPedidoDto): Promise<StatusPedidoModel> {
+  //   return this.StatusPedidoService.create(createStatusPedidoDto);
+  // }
+
   @Get()
   findAll(): Promise<StatusPedidoModel[]> {
     return this.StatusPedidoService.findAll({});

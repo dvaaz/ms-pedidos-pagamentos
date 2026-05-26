@@ -62,18 +62,35 @@ export class PedidoService {
 
     // cria GUID do pedido
     const pedidoUuid = uuidv7(); // Gera um UUID para o pedido utilizando a função uuid versao 7
-    
 
-    const pedido: Omit<PedidoModel,
-       'pedido_valor_total' | 'status_pedido_id' |
-       'pedido_created_at' | 'pedido_updated_at'> = {
+    const statusPedido = await this.prisma.status_pedido.findFirst({
+      where: {
+        status_pedido_nome: 'ACEITO',
+      },
+      select: {
+        status_pedido_id: true,
+      },
+    });
+
+    if (!statusPedido) {
+      throw new NotFoundException('Status do pedido não encontrado');
+    }
+    
+    // Cria o pedido para poder criar os itens
+    const pedido = {
         pedido_uuid: pedidoUuid,
         usuario_uuid: user,
         pedido_nome_destinatario: createPedidoDto.destinatario || 'Destinatário não informado',
         endereco_de_entrega_uuid: endereco?.endereco_uuid || '',
+        pedido_valor_total: 0,
+        status_pedido_id: statusPedido.status_pedido_id,
       };
 
       // Cria um array para armazenar as IDs do item do pedido vindos no dto CreatePedidoDto.
+      const createPedido = await this.prisma.pedido.create({
+        data: pedido,
+      });
+
       const produtosPedido: Omit<CreateItemPedidoDto, 'pedido_uuid'>[] = [];
 
       for (const item of createPedidoDto.itens_pedido) {
@@ -93,57 +110,46 @@ export class PedidoService {
       const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
       
       if (!createProdutosPedido || createProdutosPedido.length === 0) {
-        const statusPedido = await this.prisma.status_pedido.findFirst({
-        where: {
-          status_pedido_nome: 'REJEITADO',
-        },
-        select: {
-          status_pedido_id: true,
-        },
-      });  
-      }
-
-      const statusPedido = await this.prisma.status_pedido.findFirst({
-        where: {
-          status_pedido_nome: 'ACEITO',
-        },
-        select: {
-          status_pedido_id: true,
-        },
-      });
-
-
-      if (!statusPedido) {
-        throw new NotFoundException('Status do pedido não encontrado');
+        throw new BadRequestException('O pedido deve conter pelo menos um item válido');
       }
 
       // Incluir o valor total do pedido dos itens que foram ao pedido
       // 
-      const updatePedido = this.prisma.pedido.update({
+      const updatePedido = await this.prisma.pedido.update({
         where: { pedido_uuid: pedidoUuid },
         data: { 
           pedido_valor_total: valorTotalDoPedido,
           status_pedido_id: statusPedido.status_pedido_id
          },
          select:{
-          ...
-         }
-      });
+          pedido_uuid: true,
+          usuario_uuid: true,
+          pedido_nome_destinatario: true,
+          endereco_de_entrega_uuid: true,
+          pedido_valor_total: true,
+          status_pedido_id: true,
+          pedido_created_at: true,
+          pedido_updated_at: true,
+          }
+        });
+        
 
       
-      const response: PedidoModel | null = await this.prisma.pedido.findUnique({
-        where: { pedido_uuid: pedidoUuid }
-      });
-      if (!response) {
-        throw new NotFoundException(`Pedido com o UUID ${pedidoUuid} não foi encontrado.`);
-      }
-
-      
-
-      return response;
+      // const response: PedidoModel | null = await this.prisma.pedido.findUnique({
+      //   where: { pedido_uuid: pedidoUuid }
+      // });
+      // if (!response) {
+      //   throw new NotFoundException(`Pedido com o UUID ${pedidoUuid} não foi encontrado.`);
+      // }
+      return updatePedido;
 
   }
 
+  /**
+   * Buscar todos os Pedidos referentes a UM usuario
+   * @param userId
+   * @returns
+   */
   async findAll(userId: string): Promise<PedidoModel[]> {
     try {
       return await this.prisma.pedido.findMany({
