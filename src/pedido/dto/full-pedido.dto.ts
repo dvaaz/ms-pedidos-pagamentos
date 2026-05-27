@@ -16,7 +16,6 @@ export class FullPedidoDto {
     // Array de produtos do pedido, com nome, descrição, preço unitário e quantidade
     produto_pedido: {
         produto_nome: string;
-        produto_descricao: string;
         preco_unitario: number;
         quantidade: number;
     }[];

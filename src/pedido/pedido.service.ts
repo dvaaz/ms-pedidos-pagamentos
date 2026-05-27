@@ -16,7 +16,8 @@ import {
 } from '../generated/prisma/client.js';
 import { ItemPedidoService } from '../item_pedido/item_pedido.service';
 import { StatusPedidoService } from '../status_pedido/status_pedido.service.js';
-import { item_pedido } from '../../dist/src/generated/prisma/browser';
+import { FullPedidoDto } from './dto/full-pedido.dto.js';
+
 
 
 @Injectable()
@@ -157,12 +158,12 @@ export class PedidoService {
       select: {
         pedido_uuid: true,
         pedido_valor_total: true,
-        pedido_status: {
+        status_pedido: {
           select: {
             status_pedido_nome: true,
           }
         },
-        data_criacao: true,
+        pedido_created_at: true,
         endereco_de_entrega: {
           select: {
             endereco_cep: true,
@@ -176,9 +177,47 @@ export class PedidoService {
       }
     })
     .catch((error) => {
-      throw new N
-    })
-      
+      throw new NotFoundException(`Pedido não foi encontrado.`);
+    });
+    if (!pedido || !pedido.status_pedido.status_pedido_nome) {
+      throw new NotFoundException(`Pedido não foi encontrado.`);
+    }
+    
+    const produtosPedido = await this.prisma.item_pedido.findMany({
+      where: { pedido_uuid: pedidoId },
+      select:{
+        item_pedido_nome_produto: true,
+        item_pedido_preco: true,
+        item_pedido_quantidade: true
+      },
+    }).catch((error) => {
+      throw new NotFoundException(`Itens do pedido não foram encontrados.`);
+    });
+    if (!produtosPedido || produtosPedido.length === 0) {
+      throw new NotFoundException(`Itens do pedido não foram encontrados.`);
+    }
+
+    const response: FullPedidoDto = {
+      pedido_uuid: pedido.pedido_uuid,
+      pedido_valor_total: pedido.pedido_valor_total,
+      pedido_status: pedido.status_pedido.status_pedido_nome,
+      data_criacao: pedido.pedido_created_at,
+      endereco_entrega: {
+        cep: pedido.endereco_de_entrega.endereco_cep,
+        uf: pedido.endereco_de_entrega.endereco_uf,
+        municipio: pedido.endereco_de_entrega.endereco_municipio,
+        logradouro: pedido.endereco_de_entrega.endereco_logradouro,
+        numero: pedido.endereco_de_entrega.endereco_numero,
+        complemento: pedido.endereco_de_entrega.endereco_complemento || '',
+      },
+      produto_pedido: produtosPedido.map(item => ({ // auto map
+        produto_nome: item.item_pedido_nome_produto,
+        preco_unitario: item.item_pedido_preco,
+        quantidade: item.item_pedido_quantidade
+      }))
+    };
+
+    return response;
 
   }
 

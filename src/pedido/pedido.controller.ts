@@ -21,6 +21,11 @@ export class PedidoController {
     return this.pedidoService.findAll(userId);
   }
 
+  @Get('full/:userId/:pedidoId')
+  composePedido(@Param('userId') userId: string, @Param('pedidoId') pedidoId: string) {
+    return this.pedidoService.composePedido(userId, pedidoId);
+  }
+
   @Get('findone/:id')
   findOne(@Param('id') id: string) {
     return this.pedidoService.findOne(id);
