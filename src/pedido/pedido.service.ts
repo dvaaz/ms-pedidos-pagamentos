@@ -26,16 +26,102 @@ export class PedidoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly entrega: EnderecoDeEntregaService,
-    private readonly produto: ItemPedidoService,
+    private readonly produtoPedido: ItemPedidoService,
     private readonly statusPedido: StatusPedidoService
   ) { }
+
+  /**
+   * NÃO UTILIZAR PARA PARCELAMENTO
+   * Converte a saida para centavos
+   * @param valor
+   */
+  private valueToCentsSimple(valor: number): string {
+    // Divide para exibir o valor em centavos para o usuário. 2f para garantir que o valor seja exibido com 2 casas decimais, mesmo que seja um número inteiro.
+    const response = Math.round(valor / 100).toFixed(2);
+    return response;
+  }
+
+  /**
+   * Função para um retorno legivel do pedido criado. Inclui array de itens do pedido e seus devidos preços, nome do status do pedido
+  * @params userGuid, pedidoGuid 
+  */
+  async composePedido(userId: string, pedidoId: string): Promise<FullPedidoDto> {
+  // TO DO: Validar usuario
+    const pedido = await this.prisma.pedido.findUnique({
+      where: { 
+        pedido_uuid: pedidoId, usuario_uuid: userId },
+      select:{
+        pedido_uuid: true,
+        pedido_valor_total: true,
+        pedido_created_at: true,
+        pedido_updated_at: true,
+        pedido_nome_destinatario: true,
+        status_pedido: {
+          select: {
+            status_pedido_nome: true,
+          },
+        },
+        endereco_de_entrega: {
+          select: {
+            endereco_cep: true,
+            endereco_uf: true,
+            endereco_municipio: true,
+            endereco_logradouro: true,
+            endereco_numero: true,
+            endereco_complemento: true,
+          }
+        },
+        item_pedido: {
+          select:{
+            item_pedido_nome_produto: true,
+            item_pedido_preco: true,
+            item_pedido_quantidade: true
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      throw new NotFoundException(`Pedido não foi encontrado.`);
+    });
+    if (!pedido || !pedido.status_pedido.status_pedido_nome) {
+      throw new NotFoundException(`Pedido não foi encontrado.`);
+    }
+    if (!pedido.item_pedido || pedido.item_pedido.length === 0) {
+      throw new NotFoundException(`Itens do pedido não foram encontrados.`);
+    }
+
+    const response: FullPedidoDto = {
+      pedido_id: pedido.pedido_uuid,
+      pedido_valor_total: this.valueToCentsSimple(pedido.pedido_valor_total),
+      pedido_status: pedido.status_pedido.status_pedido_nome,
+      data_criacao: pedido.pedido_created_at,
+      data_atualizacao: pedido.pedido_updated_at,
+      endereco_entrega: {
+        destinatario: pedido.pedido_nome_destinatario,
+        cep: pedido.endereco_de_entrega.endereco_cep,
+        uf: pedido.endereco_de_entrega.endereco_uf,
+        municipio: pedido.endereco_de_entrega.endereco_municipio,
+        logradouro: pedido.endereco_de_entrega.endereco_logradouro,
+        numero: pedido.endereco_de_entrega.endereco_numero,
+        complemento: pedido.endereco_de_entrega.endereco_complemento || '',
+      },
+      produto_pedido: pedido.item_pedido.map(item => ({ // ao contrario dos DTOS anteriores o item pedido tem os nomes iguais aos do DB. 
+        produto_nome: item.item_pedido_nome_produto,
+        preco_unitario: this.valueToCentsSimple(item.item_pedido_preco),
+        quantidade: item.item_pedido_quantidade
+      }))
+    };
+
+    return response;
+
+  }
 
   /**
    * Recebe o id do usuário e uma string de itens do pedido e retorna a confirmação de criação do pedido. 
    * @param createPedidoDto 
    * @returns 
    */
-  async create(user: string, createPedidoDto: CreatePedidoDto): Promise<PedidoModel> {
+  async create(user: string, createPedidoDto: CreatePedidoDto): Promise<FullPedidoDto> {
     // Como o UUID do usuário virá da API de carrinho, pulamos a etapa de validação do mesmo, podemos apenas validar o carrinho (por segurança).
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
     let endereco: EnderecoEntregaModel | null = null;
@@ -105,11 +191,8 @@ export class PedidoService {
       produtosPedido.push(produto);
     }
 
-    // Outra possibilidade seria criar o pedido primeiro, e depois criar os itens do pedido, associando-os ao pedido criado ou caso nao seja possivel confirmar nenhum produto anexar o status 'REJEITADO'.
-    // No entanto, isso exigiria uma transação para garantir a atomicidade da operação, o que pode ser mais complexo de implementar. 
-    // Para simplificar, optei por criar os itens do pedido primeiro e depois criar o pedido associando os itens criados.
-
-    const [createProdutosPedido, valorTotalDoPedido] = await this.produto.create(pedidoUuid, produtosPedido);
+    // Insere os Itens do pedido e devolve o valor total
+    const [createProdutosPedido, valorTotalDoPedido] = await this.produtoPedido.create(pedidoUuid, produtosPedido);
 
     if (!createProdutosPedido || createProdutosPedido.length === 0) {
       throw new BadRequestException('O pedido deve conter pelo menos um item válido');
@@ -126,112 +209,69 @@ export class PedidoService {
       select: {
         pedido_uuid: true,
         usuario_uuid: true,
-        pedido_nome_destinatario: true,
-        endereco_de_entrega_uuid: true,
-        pedido_valor_total: true,
-        status_pedido_id: true,
-        pedido_created_at: true,
-        pedido_updated_at: true,
       }
-    });
-
-
-
-    // const response: PedidoModel | null = await this.prisma.pedido.findUnique({
-    //   where: { pedido_uuid: pedidoUuid }
-    // });
-    // if (!response) {
-    //   throw new NotFoundException(`Pedido com o UUID ${pedidoUuid} não foi encontrado.`);
-    // }
-    return response;
-
-  }
-
-  /**
-   * Função para um retorno legivel do pedido criado. Inclui array de itens do pedido e seus devidos preços, nome do status do pedido
-  * @params userGuid, pedidoGuid 
-  */
-  async composePedido(userId: string, pedidoId: string): Promise<FullPedidoDto> {
-    // Busca o pedido e tras dados relacionados (endereço de entrega e status do pedido) para compor o DTO de resposta.
-    const pedido = await this.prisma.pedido.findUnique({
-      where: { pedido_uuid: pedidoId },
-      select: {
-        pedido_uuid: true,
-        pedido_valor_total: true,
-        status_pedido: {
-          select: {
-            status_pedido_nome: true,
-          }
-        },
-        pedido_created_at: true,
-        endereco_de_entrega: {
-          select: {
-            endereco_cep: true,
-            endereco_uf: true,
-            endereco_municipio: true,
-            endereco_logradouro: true,
-            endereco_numero: true,
-            endereco_complemento: true,
-          }
-        }
-      }
-    })
-    .catch((error) => {
-      throw new NotFoundException(`Pedido não foi encontrado.`);
-    });
-    if (!pedido || !pedido.status_pedido.status_pedido_nome) {
-      throw new NotFoundException(`Pedido não foi encontrado.`);
-    }
-    
-    const produtosPedido = await this.prisma.item_pedido.findMany({
-      where: { pedido_uuid: pedidoId },
-      select:{
-        item_pedido_nome_produto: true,
-        item_pedido_preco: true,
-        item_pedido_quantidade: true
-      },
     }).catch((error) => {
-      throw new NotFoundException(`Itens do pedido não foram encontrados.`);
+      throw new InternalServerErrorException(`Erro ao atualizar o valor total do pedido: ${error instanceof Error ? error.message : String(error)}`);
     });
-    if (!produtosPedido || produtosPedido.length === 0) {
-      throw new NotFoundException(`Itens do pedido não foram encontrados.`);
-    }
 
-    const response: FullPedidoDto = {
-      pedido_uuid: pedido.pedido_uuid,
-      pedido_valor_total: pedido.pedido_valor_total,
-      pedido_status: pedido.status_pedido.status_pedido_nome,
-      data_criacao: pedido.pedido_created_at,
-      endereco_entrega: {
-        cep: pedido.endereco_de_entrega.endereco_cep,
-        uf: pedido.endereco_de_entrega.endereco_uf,
-        municipio: pedido.endereco_de_entrega.endereco_municipio,
-        logradouro: pedido.endereco_de_entrega.endereco_logradouro,
-        numero: pedido.endereco_de_entrega.endereco_numero,
-        complemento: pedido.endereco_de_entrega.endereco_complemento || '',
-      },
-      produto_pedido: produtosPedido.map(item => ({ // auto map
-        produto_nome: item.item_pedido_nome_produto,
-        preco_unitario: item.item_pedido_preco,
-        quantidade: item.item_pedido_quantidade
-      }))
-    };
 
-    return response;
+  // NOTA: Porvavelmente o return torne-se desnecessário. Já que compose pedido está criado
+
+    return this.composePedido(response.usuario_uuid, response.pedido_uuid);
 
   }
-
 
   /**
    * Buscar todos os Pedidos referentes a UM usuario
    * @param userId
    * @returns
    */
-  async findAll(userId: string): Promise<PedidoModel[]> {
+  async findAll(userId: string): Promise<Omit<FullPedidoDto,
+  'endereco_entrega'>[]> {
     try {
-      return await this.prisma.pedido.findMany({
+      const pedidos =  await this.prisma.pedido.findMany({
         where: { usuario_uuid: userId },
-      });
+        select: {
+          pedido_uuid: true,
+          pedido_valor_total: true,
+          pedido_created_at: true,
+          pedido_updated_at: true,
+          status_pedido: {
+            select: {
+              status_pedido_nome: true,
+            },
+          },
+          item_pedido: {
+            select:{
+              item_pedido_nome_produto: true,
+              item_pedido_preco: true,
+              item_pedido_quantidade: true
+            }
+          }
+        }
+      })
+      if(!pedidos || pedidos.length === 0) {
+        throw new NotFoundException(`Nenhum pedido encontrado para o usuário.`);
+      }
+      if(pedidos.some(pedido => !pedido.status_pedido || !pedido.status_pedido.status_pedido_nome)) {
+        throw new NotFoundException(`Status do pedido não encontrado para um ou mais pedidos. Contatar o Administrador`);
+      }
+        
+      
+      const response: Omit<FullPedidoDto, 'endereco_entrega'>[] = pedidos.map(pedido => ({
+        pedido_id: pedido.pedido_uuid,
+        pedido_valor_total: this.valueToCentsSimple(pedido.pedido_valor_total),
+        pedido_status: pedido.status_pedido?.status_pedido_nome || 'Status não encontrado',
+        data_criacao: pedido.pedido_created_at,
+        data_atualizacao: pedido.pedido_updated_at,
+        produto_pedido: pedido.item_pedido.map(item => ({
+          produto_nome: item.item_pedido_nome_produto,
+          preco_unitario: this.valueToCentsSimple(item.item_pedido_preco),
+          quantidade: item.item_pedido_quantidade
+        }))
+      }));
+
+      return response;
 
     } catch (error) {
       throw new BadRequestException(`Não foi possivel encontrar os pedidos ${error}`);
@@ -239,6 +279,11 @@ export class PedidoService {
 
   }
 
+  /**
+   * 
+   * @param id Busca por um pedido
+   * @returns 
+   */
   async findOne(id: string): Promise<PedidoModel> {
     try {
       const pedido = await this.prisma.pedido.findUnique({
@@ -273,15 +318,28 @@ export class PedidoService {
       where: { pedido_uuid: id },
       select: {
         status_pedido_id: true,
-        status_pedido: true
-      },
+        status_pedido: {
+          select: {
+            status_pedido_nome: true,
+          }
+        }
+        },
+    })
+    .catch((error) => {
+      // Alterado para o erro padrao de find do Prisma
+      if (error instanceof PrismaClient.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException(`Pedido não foi encontrado.`);
+      }
+      throw error;
     });
 
-    if (!statusAtual) {
-      throw new NotFoundException(`Pedido com o UUID ${id} não foi encontrado.`);
+    if (!statusAtual?.status_pedido || !statusAtual.status_pedido.status_pedido_nome) {
+      throw new NotFoundException(`Pedidonão foi encontrado.`);
     }
 
-    const novoStatusId: number = await this.statusPedido.updateStatusPedido(statusAtual.status_pedido_id);
+    const nomeStatus = statusAtual.status_pedido.status_pedido_nome;
+// Presando responsabilidade unica essa funcao nao bloqueara os pedidos cancelados, rejeitados ou entregues. Apesar de que eu acredite que isso pouparia microsegundos do processo
+    const novoStatusId: number = await this.statusPedido.updateStatusPedido(nomeStatus);
     if (!novoStatusId) {
       throw new BadRequestException(`Não foi possível atualizar o status do pedido com o UUID ${id}. Status atual: ${statusAtual.status_pedido}`);
     }
@@ -295,6 +353,8 @@ export class PedidoService {
     if (!statusAtualizado) {
       throw new NotFoundException(`Não foi possível atualizar o status do pedido com o UUID ${id}.`);
     }
+
+    return true;
   }
 
   /**
@@ -309,11 +369,19 @@ export class PedidoService {
         select: {
           pedido_uuid: true,
           usuario_uuid: true,
+          status_pedido: {
+            select: {
+              status_pedido_nome: true,
+            },
+          },
         }
       });
 
       if (!pedido) {
         throw new NotFoundException(`Pedido não encontrado.`);
+      }
+      if (pedido.status_pedido.status_pedido_nome !== 'ACEITO' && pedido.status_pedido.status_pedido_nome !== 'PENDENTE') {
+        throw new BadRequestException(`Não é permitido alterar o endereço de entrega para este status de pedido.`);
       }
 
       // Busca o endereço de entrega para garantir que ele exista e pertença ao mesmo usuário do pedido

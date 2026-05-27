@@ -7,4 +7,5 @@ export class CreatePedidoDto {
     destinatario?: string;
     @ApiProperty({ description: 'Itens do pedido', required: true, type: CreateItemPedidoDto, isArray: true })
     itens_pedido!: CreateItemPedidoDto[]; // Recebe um array de objetos representando os itens do pedido
+
 }

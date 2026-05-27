@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import type { CreateStatusPedidoDto } from './dto/create-status_pedido.dto';
 import type { UpdateStatusPedidoDto } from './dto/update-status_pedido.dto';
 import { PrismaService } from '../database/prisma/prisma.service';
@@ -17,32 +17,44 @@ export class StatusPedidoService {
    * Função para fazer a mudança do status do pedido de acordo com a lógica de negócio. retorna o id do status atualizado
    * 
    */
-  async updateStatusPedido(id: number) : Promise<StatusPedidoModel['status_pedido_id']> {
+  async updateStatusPedido(id: string) : Promise<StatusPedidoModel['status_pedido_id']> {
     // Aqui a função receberia o id do pedido e faria a mudança de status de acordo com a lógica de negócio, por exemplo, se o pedido for criado, ele recebe o status 'PENDENTE', depois de um tempo ele muda para 'ACEITO' ou 'REJEITADO' dependendo da validação do carrinho e do pagamento, depois disso ele pode mudar para 'EM PREPARAÇÃO', 'EM ENTREGA' e por fim 'ENTREGUE'.
     // A implementação dessa função depende muito da lógica de negócio definida para o sistema, então deixarei ela em branco por enquanto.
     if (!id) {
       throw new Error('O ID do status do pedido é obrigatório');
     }
-    const status = await this.prisma.status_pedido.findUnique({
-      where: { status_pedido_id: id },
-      select: { status_pedido_id: true, status_pedido_nome: true }
+
+    // valida status do pedido atual
+    const status = await this.prisma.status_pedido.findFirst({
+      where: { status_pedido_nome: id },
+      select: {
+        status_pedido_id: true, 
+        status_pedido_nome: true }
     });
     if (!status || !status.status_pedido_id || !status.status_pedido_nome) {
       throw new Error('Status do pedido não encontrado');
     }
+    
 
-    // lógica de atualização do status do pedido, por exemplo:
-    const arrayDeStatusRegistrados = ['CANCELADO', 'DEVOLUCAO', 'PENDENTE', 'ACEITO', 'APROVADO', 'SEPARACAO', 'ENVIADO', 'ENTREGUE'];
+    // lógica de atualização do status do pedido:
+    const arrayDeStatusRegistrados = 
+    ['CANCELADO', 'DEVOLUCAO', 
+      'PENDENTE', 'ACEITO', 'APROVADO', 
+      'SEPARACAO', 'ENVIADO', 'ENTREGUE'];
     const indexDoStatusAtual = arrayDeStatusRegistrados.indexOf(status.status_pedido_nome);
      if (indexDoStatusAtual === -1) {
       throw new Error(`Status do pedido inválido.`);
     }
+
     if (status.status_pedido_nome === arrayDeStatusRegistrados[0] || status.status_pedido_nome === arrayDeStatusRegistrados[1]) {
       throw new Error(`Não é permitido atualizar o status do pedido.`);
     }
+
     if (status.status_pedido_nome === arrayDeStatusRegistrados[arrayDeStatusRegistrados.length - 1]) {
       throw new Error(`O pedido já foi entregue, não é permitido atualizar o status do pedido.`);
     }
+
+    // armazena o nome do novo status e faz a busca do id deste
     const novoStatus = arrayDeStatusRegistrados[indexDoStatusAtual + 1];
 
     await this.prisma.status_pedido.findFirst({
@@ -50,7 +62,7 @@ export class StatusPedidoService {
       select: { status_pedido_id: true }
     }).then((statusEncontrado) => {
       if (!statusEncontrado || !statusEncontrado.status_pedido_id) {
-        throw new Error(`Status do pedido inválido.`);
+        throw new Error(`Status do pedido inválido.`); // torçer para não encontrar isso
       }
       return statusEncontrado.status_pedido_id;
     });
@@ -58,6 +70,11 @@ export class StatusPedidoService {
 
     return status.status_pedido_id;
   }
+
+  ///////////------------------------------------------\\\\\\\\\\\\\\\\\\\\
+  // ATENCAO, TODAS AS FUNCOES ABAIXO DEVEM SER TRATADAS NO DB, 
+  // PARA GARANTIR A INTEGRIDADE DOS DADOS E EVITAR PROBLEMAS DE CONCORRENCIA.
+  //  -----------------------------------------------------\\\\\\\\\\
 
   /**
    * Cria novo método de pagamento
@@ -116,7 +133,7 @@ export class StatusPedidoService {
   }
 
   /**
-   * Update de método de pagamento
+   * Update de método de pagamento. na entrega utilizar o DB para fazer essa atualização, para garantir a integridade dos dados e evitar problemas de concorrência.
    * @param id 
    * @param data 
    * @returns 
@@ -145,7 +162,7 @@ export class StatusPedidoService {
     }
 
   /**
-   * Remover método de pagamento
+   * Remover método de pagamento. Na entrega, passa se a fazer o registro pelo DB
    * @param id 
    * @returns 
    */
@@ -160,5 +177,8 @@ export class StatusPedidoService {
         }
         throw e; 
       }
+    
+        
+
     }
 }

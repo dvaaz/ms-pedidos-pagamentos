@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
@@ -6,13 +6,14 @@ import { ApiOperation } from '@nestjs/swagger';
 import {
   pedido as PedidoModel,
 } from '../generated/prisma/client.js';
+import { FullPedidoDto } from './dto/full-pedido.dto';
 
 @Controller('pedido')
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
   @Post(':userId')
-  create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) : Promise<PedidoModel> {
+  create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) : Promise<FullPedidoDto> {
     return this.pedidoService.create(userId,createPedidoDto);
   }
 
@@ -22,7 +23,7 @@ export class PedidoController {
   }
 
   @Get('full/:userId/:pedidoId')
-  composePedido(@Param('userId') userId: string, @Param('pedidoId') pedidoId: string) {
+  composePedido(@Param('userId') userId: string, @Param('pedidoId') pedidoId: string): Promise<FullPedidoDto> {
     return this.pedidoService.composePedido(userId, pedidoId);
   }
 
@@ -38,8 +39,16 @@ export class PedidoController {
     return this.pedidoService.updateEndereco(id, enderecoId);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.pedidoService.remove(+id);
-  // }
+  @Patch('update-status/:id')
+    @HttpCode(HttpStatus.NO_CONTENT) // veridicar documentacao
+  @ApiOperation({ summary: 'Atualiza o status do pedido para o próximo status na sequência' })
+  updateStatusPedido(@Param('id') id: string) {
+    const response = this.pedidoService.updateStatusPedido(id);
+    if(response) { // mensagem de 204 no frontend
+      return response;
+    } else {
+      return HttpCode(HttpStatus.BAD_REQUEST); // mensagem de 400 no frontend
+    }
+
+  }
 }
