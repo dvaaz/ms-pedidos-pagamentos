@@ -39,16 +39,17 @@ export class PedidoController {
     return this.pedidoService.updateEndereco(id, enderecoId);
   }
 
-  @Patch('update-status/:id')
-    @HttpCode(HttpStatus.NO_CONTENT) // veridicar documentacao
-  @ApiOperation({ summary: 'Atualiza o status do pedido para o próximo status na sequência' })
-  updateStatusPedido(@Param('id') id: string) {
-    const response = this.pedidoService.updateStatusPedido(id);
-    if(response) { // mensagem de 204 no frontend
-      return response;
-    } else {
-      return HttpCode(HttpStatus.BAD_REQUEST); // mensagem de 400 no frontend
-    }
+  // funcao nao esta atualizando
+  // @Patch('update-status/:id')
+  //   @HttpCode(HttpStatus.NO_CONTENT) // veridicar documentacao
+  // @ApiOperation({ summary: 'Atualiza o status do pedido para o próximo status na sequência' })
+  // updateStatusPedido(@Param('id') id: string) {
+  //   const response = this.pedidoService.updateStatusPedido(id);
+  //   if(response) { // mensagem de 204 no frontend
+  //     return response;
+  //   } else {
+  //     return HttpCode(HttpStatus.BAD_REQUEST); // mensagem de 400 no frontend
+  //   }
 
-  }
+  // }
 }
