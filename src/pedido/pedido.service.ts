@@ -22,6 +22,7 @@ import { FullPedidoDto } from './dto/full-pedido.dto.js';
 
 @Injectable()
 export class PedidoService {
+private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -29,6 +30,9 @@ export class PedidoService {
     private readonly produtoPedido: ItemPedidoService,
     private readonly statusPedido: StatusPedidoService
   ) { }
+
+
+
 
   /**
    * NÃO UTILIZAR PARA PARCELAMENTO
@@ -121,24 +125,34 @@ export class PedidoService {
    * @param createPedidoDto 
    * @returns 
    */
-  async create(user: string, createPedidoDto: CreatePedidoDto): Promise<FullPedidoDto> {
+  async create(user: string, createPedidoDto: CreatePedidoDto) {
     // Como o UUID do usuário virá da API de carrinho, pulamos a etapa de validação do mesmo, podemos apenas validar o carrinho (por segurança).
-    // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos.
-    let endereco: EnderecoEntregaModel | null = null;
-    if (createPedidoDto.endereco_id) {
-      endereco = await this.entrega.findOne(user, createPedidoDto.endereco_id); // tambem poderia ser via prisma
+    // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos. Ou isso vem do projeto carrinho
+    let endereco: Pick<EnderecoEntregaModel, 'endereco_uuid'> | null = null;
 
-      if (!endereco || endereco.endereco_uuid !== createPedidoDto.endereco_id) {
-        throw new NotFoundException('Endereço não encontrado');
+    
+    if (createPedidoDto.endereco_id && createPedidoDto.endereco_id.trim() !== '' && createPedidoDto.endereco_id.length === 36 && this.uuidv7Regex.test(createPedidoDto.endereco_id)) {
+      try {
+        const resultEndereco = await this.prisma.endereco_de_entrega.findUnique({
+          where: {
+            endereco_uuid: createPedidoDto.endereco_id,
+            endereco_usuario_uuid: user
+          },
+          select: {
+            endereco_uuid: true
+          }
+        });
+        endereco = resultEndereco;
+      } catch (error) {
+        // Ignora o erro e continua
       }
-    }
-    // busca o primeiroo endereco do usuario.
-    if (!createPedidoDto.endereco_id) {
-      const enderecoEncontrado = await this.prisma.endereco_de_entrega.findFirst({
-        where: { endereco_usuario_uuid: user },
-      });
-      if (enderecoEncontrado) {
-        endereco = enderecoEncontrado;
+    } else if (!createPedidoDto.endereco_id || createPedidoDto.endereco_id.trim() === '' || createPedidoDto.endereco_id.length === 0) {
+      try {
+        endereco = await this.prisma.endereco_de_entrega.findFirst({
+          where: { endereco_usuario_uuid: user }
+        });
+      } catch (error) {
+        // Ignora o erro e continua
       }
     }
 
@@ -217,7 +231,7 @@ export class PedidoService {
 
   // NOTA: Porvavelmente o return torne-se desnecessário. Já que compose pedido está criado
 
-    return this.composePedido(response.usuario_uuid, response.pedido_uuid);
+    return { usuario_uuid: response.usuario_uuid, pedido_uuid: response.pedido_uuid };
 
   }
 
@@ -333,6 +347,7 @@ export class PedidoService {
       throw error;
     });
 
+    console.log("Pedido Service:",statusAtual);
     if (!statusAtual?.status_pedido || !statusAtual.status_pedido.status_pedido_nome) {
       throw new NotFoundException(`Pedidonão foi encontrado.`);
     }

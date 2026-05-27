@@ -1,8 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateItemPedidoDto {
-    @ApiProperty({ description: 'Será criada no servidor', required: false})
-    pedido_uuid?: string;
     @ApiProperty({ description: 'Identificacao do produto', required: true})
     produto_id!: number;
     @ApiProperty({ description:'Snapshot do nome do Produto ', required:false })

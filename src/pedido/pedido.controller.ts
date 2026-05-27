@@ -1,20 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, InternalServerErrorException } from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
-import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import {
   pedido as PedidoModel,
 } from '../generated/prisma/client.js';
 import { FullPedidoDto } from './dto/full-pedido.dto';
+import request from 'supertest';
 
 @Controller('pedido')
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
   @Post(':userId')
-  create(@Param('userId') userId: string, @Body() createPedidoDto: CreatePedidoDto) : Promise<FullPedidoDto> {
-    return this.pedidoService.create(userId,createPedidoDto);
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Param('userId') userId: string, 
+    @Body() createPedidoDto: CreatePedidoDto
+  ) : Promise<FullPedidoDto> {
+    const request = await this.pedidoService.create(userId, createPedidoDto);
+    if (!request) {
+      throw new InternalServerErrorException('Erro ao criar pedido');
+    }
+    const response = await this.pedidoService.composePedido((await request).usuario_uuid, (await request).pedido_uuid);
+    return response;
   }
 
   @Get(':userId')
@@ -40,16 +49,16 @@ export class PedidoController {
   }
 
   // funcao nao esta atualizando
-  // @Patch('update-status/:id')
-  //   @HttpCode(HttpStatus.NO_CONTENT) // veridicar documentacao
-  // @ApiOperation({ summary: 'Atualiza o status do pedido para o próximo status na sequência' })
-  // updateStatusPedido(@Param('id') id: string) {
-  //   const response = this.pedidoService.updateStatusPedido(id);
-  //   if(response) { // mensagem de 204 no frontend
-  //     return response;
-  //   } else {
-  //     return HttpCode(HttpStatus.BAD_REQUEST); // mensagem de 400 no frontend
-  //   }
+  @Patch('update-status/:id')
+    @HttpCode(HttpStatus.NO_CONTENT) // veridicar documentacao
+  @ApiOperation({ summary: 'Atualiza o status do pedido para o próximo status na sequência' })
+  updateStatusPedido(@Param('id') id: string) {
+    const response = this.pedidoService.updateStatusPedido(id);
+    if(response) { // mensagem de 204 no frontend
+      return response;
+    } else {
+      return HttpCode(HttpStatus.BAD_REQUEST); // mensagem de 400 no frontend
+    }
 
-  // }
+  }
 }
