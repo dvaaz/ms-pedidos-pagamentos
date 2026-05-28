@@ -34,7 +34,7 @@ export class StatusPedidoService {
     if (!status || !status.status_pedido_id || !status.status_pedido_nome) {
       throw new Error('Status do pedido não encontrado');
     }
-    
+  
 
     // lógica de atualização do status do pedido:
     const arrayDeStatusRegistrados = 
@@ -42,6 +42,7 @@ export class StatusPedidoService {
       'PENDENTE', 'ACEITO', 'APROVADO', 
       'SEPARACAO', 'ENVIADO', 'ENTREGUE'];
     const indexDoStatusAtual = arrayDeStatusRegistrados.indexOf(status.status_pedido_nome);
+
      if (indexDoStatusAtual === -1) {
       throw new Error(`Status do pedido inválido.`);
     }
@@ -57,18 +58,18 @@ export class StatusPedidoService {
     // armazena o nome do novo status e faz a busca do id deste
     const novoStatus = arrayDeStatusRegistrados[indexDoStatusAtual + 1];
 
-    await this.prisma.status_pedido.findFirst({
+
+    // Primeiro, busca o status pelo nome para obter o ID
+    const statusEncontrado = await this.prisma.status_pedido.findFirst({
       where: { status_pedido_nome: novoStatus },
-      select: { status_pedido_id: true }
-    }).then((statusEncontrado) => {
-      if (!statusEncontrado || !statusEncontrado.status_pedido_id) {
-        throw new Error(`Status do pedido inválido.`); // torçer para não encontrar isso
-      }
-      return statusEncontrado.status_pedido_id;
+      select: { status_pedido_id: true, status_pedido_nome: true }
     });
 
+    if (!statusEncontrado || !statusEncontrado.status_pedido_id) {
+      throw new Error(`Status do pedido inválido.`);
+    }
 
-    return status.status_pedido_id;
+    return statusEncontrado.status_pedido_id;
   }
 
   ///////////------------------------------------------\\\\\\\\\\\\\\\\\\\\

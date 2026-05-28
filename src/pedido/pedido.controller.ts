@@ -41,6 +41,10 @@ export class PedidoController {
     return this.pedidoService.findOne(id);
   }
 
+  @Get('validaCompra/:id')
+  validaCompra(@Param('id') id: string) : Promise<boolean> {
+    return this.pedidoService.validaCompra(id);
+  }
 
   @Patch('update-endereco/:id')
   @ApiOperation({ summary: 'Atualiza o endereço de entrega de um pedido com outro já existente' })
@@ -59,6 +63,6 @@ export class PedidoController {
     } else {
       return HttpCode(HttpStatus.BAD_REQUEST); // mensagem de 400 no frontend
     }
-
   }
+
 }

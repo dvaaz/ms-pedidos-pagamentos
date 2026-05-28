@@ -17,12 +17,13 @@ import {
 import { ItemPedidoService } from '../item_pedido/item_pedido.service';
 import { StatusPedidoService } from '../status_pedido/status_pedido.service.js';
 import { FullPedidoDto } from './dto/full-pedido.dto.js';
+import { error } from 'console';
 
 
 
 @Injectable()
 export class PedidoService {
-private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
+  private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -50,11 +51,12 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
   * @params userGuid, pedidoGuid 
   */
   async composePedido(userId: string, pedidoId: string): Promise<FullPedidoDto> {
-  // TO DO: Validar usuario
+    // TO DO: Validar usuario
     const pedido = await this.prisma.pedido.findUnique({
-      where: { 
-        pedido_uuid: pedidoId, usuario_uuid: userId },
-      select:{
+      where: {
+        pedido_uuid: pedidoId, usuario_uuid: userId
+      },
+      select: {
         pedido_uuid: true,
         pedido_valor_total: true,
         pedido_created_at: true,
@@ -76,7 +78,7 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
           }
         },
         item_pedido: {
-          select:{
+          select: {
             item_pedido_nome_produto: true,
             item_pedido_preco: true,
             item_pedido_quantidade: true
@@ -84,9 +86,9 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
         }
       }
     })
-    .catch((error) => {
-      throw new NotFoundException(`Pedido não foi encontrado.`);
-    });
+      .catch((error) => {
+        throw new NotFoundException(`Pedido não foi encontrado.`);
+      });
     if (!pedido || !pedido.status_pedido.status_pedido_nome) {
       throw new NotFoundException(`Pedido não foi encontrado.`);
     }
@@ -130,7 +132,7 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
     // TODO: Lógica de validação do carrinho do usuário para garantir que os itens do pedido sejam válidos. Ou isso vem do projeto carrinho
     let endereco: Pick<EnderecoEntregaModel, 'endereco_uuid'> | null = null;
 
-    
+
     if (createPedidoDto.endereco_id && createPedidoDto.endereco_id.trim() !== '' && createPedidoDto.endereco_id.length === 36 && this.uuidv7Regex.test(createPedidoDto.endereco_id)) {
       try {
         const resultEndereco = await this.prisma.endereco_de_entrega.findUnique({
@@ -229,7 +231,7 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
     });
 
 
-  // NOTA: Porvavelmente o return torne-se desnecessário. Já que compose pedido está criado
+    // NOTA: Porvavelmente o return torne-se desnecessário. Já que compose pedido está criado
 
     return { usuario_uuid: response.usuario_uuid, pedido_uuid: response.pedido_uuid };
 
@@ -241,9 +243,9 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
    * @returns
    */
   async findAll(userId: string): Promise<Omit<FullPedidoDto,
-  'endereco_entrega'>[]> {
+    'endereco_entrega'>[]> {
     try {
-      const pedidos =  await this.prisma.pedido.findMany({
+      const pedidos = await this.prisma.pedido.findMany({
         where: { usuario_uuid: userId },
         select: {
           pedido_uuid: true,
@@ -256,7 +258,7 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
             },
           },
           item_pedido: {
-            select:{
+            select: {
               item_pedido_nome_produto: true,
               item_pedido_preco: true,
               item_pedido_quantidade: true
@@ -264,14 +266,14 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
           }
         }
       })
-      if(!pedidos || pedidos.length === 0) {
+      if (!pedidos || pedidos.length === 0) {
         throw new NotFoundException(`Nenhum pedido encontrado para o usuário.`);
       }
-      if(pedidos.some(pedido => !pedido.status_pedido || !pedido.status_pedido.status_pedido_nome)) {
+      if (pedidos.some(pedido => !pedido.status_pedido || !pedido.status_pedido.status_pedido_nome)) {
         throw new NotFoundException(`Status do pedido não encontrado para um ou mais pedidos. Contatar o Administrador`);
       }
-        
-      
+
+
       const response: Omit<FullPedidoDto, 'endereco_entrega'>[] = pedidos.map(pedido => ({
         pedido_id: pedido.pedido_uuid,
         pedido_valor_total: this.valueToCentsSimple(pedido.pedido_valor_total),
@@ -335,26 +337,30 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
         status_pedido: {
           select: {
             status_pedido_nome: true,
+            status_pedido_id: true,
           }
         }
-        },
+      },
     })
-    .catch((error) => {
-      // Alterado para o erro padrao de find do Prisma
-      if (error instanceof PrismaClient.PrismaClientKnownRequestError && error.code === 'P2025') {
-        throw new NotFoundException(`Pedido não foi encontrado.`);
-      }
-      throw error;
-    });
+      .catch((error) => {
+        // Alterado para o erro padrao de find do Prisma
+        if (error instanceof PrismaClient.PrismaClientKnownRequestError && error.code === 'P2025') {
+          throw new NotFoundException(`Pedido não foi encontrado.`);
+        }
+        throw error;
+      });
 
-    console.log("Pedido Service:",statusAtual);
+    console.log("Pedido Service:", statusAtual);
+
+
     if (!statusAtual?.status_pedido || !statusAtual.status_pedido.status_pedido_nome) {
-      throw new NotFoundException(`Pedidonão foi encontrado.`);
+      throw new NotFoundException(`Pedido não foi encontrado.`);
     }
 
     const nomeStatus = statusAtual.status_pedido.status_pedido_nome;
-// Presando responsabilidade unica essa funcao nao bloqueara os pedidos cancelados, rejeitados ou entregues. Apesar de que eu acredite que isso pouparia microsegundos do processo
+    // Presando responsabilidade unica essa funcao nao bloqueara os pedidos cancelados, rejeitados ou entregues. Apesar de que eu acredite que isso pouparia microsegundos do processo
     const novoStatusId: number = await this.statusPedido.updateStatusPedido(nomeStatus);
+    console.log("Novo Status ID:", novoStatusId);
     if (!novoStatusId) {
       throw new BadRequestException(`Não foi possível atualizar o status do pedido com o UUID ${id}. Status atual: ${statusAtual.status_pedido}`);
     }
@@ -433,4 +439,31 @@ private readonly uuidv7Regex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[
     }
   }
 
+  /**
+   * Valida se o usuario comprou a compra para ter o selo nos comentarios
+   */
+  async validaCompra(compraId: string): Promise<boolean> {
+    const request = await this.prisma.pedido.findUnique({
+      where: { pedido_uuid: compraId },
+      select: {
+        status_pedido: {
+          select: {
+            status_pedido_nome: true
+          },
+        }
+      }
+    })
+    .catch(error => {
+      throw new InternalServerErrorException('Erro ao validar compra');
+    });
+
+    if (!request || !request.status_pedido) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+
+    if(request.status_pedido.status_pedido_nome !== 'ENTREGUE') {
+      return false;
+    }
+    return true;
+  }
 }
