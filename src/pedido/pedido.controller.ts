@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, InternalServerErrorException, Headers } from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { ApiOperation } from '@nestjs/swagger';
@@ -12,27 +12,27 @@ import request from 'supertest';
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
-  @Post(':userId')
+  @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
-    @Param('userId') userId: string, 
+    @Headers('userId') userId: string,
     @Body() createPedidoDto: CreatePedidoDto
   ) : Promise<FullPedidoDto> {
     const request = await this.pedidoService.create(userId, createPedidoDto);
     if (!request) {
       throw new InternalServerErrorException('Erro ao criar pedido');
     }
-    const response = await this.pedidoService.composePedido((await request).usuario_uuid, (await request).pedido_uuid);
+    const response = await this.pedidoService.composePedido(request.usuario_uuid, request.pedido_uuid);
     return response;
   }
 
-  @Get(':userId')
-  findAll(@Param('userId') userId: string) {
+  @Get()
+  findAll(@Headers('userId') userId: string) {
     return this.pedidoService.findAll(userId);
   }
 
-  @Get('full/:userId/:pedidoId')
-  composePedido(@Param('userId') userId: string, @Param('pedidoId') pedidoId: string): Promise<FullPedidoDto> {
+  @Get('full/:pedidoId')
+  composePedido(@Headers('userId') userId: string, @Param('pedidoId') pedidoId: string): Promise<FullPedidoDto> {
     return this.pedidoService.composePedido(userId, pedidoId);
   }
 

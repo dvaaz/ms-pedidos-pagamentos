@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Put, Headers } from '@nestjs/common';
 import { EnderecoDeEntregaService } from './endereco_de_entrega.service';
 import { CreateEnderecoDeEntregaDto } from './dto/create-endereco_de_entrega.dto';
 import { endereco_de_entrega as EnderecoEntregaModel } from '../generated/prisma/client';
@@ -28,9 +28,9 @@ export class EnderecoDeEntregaController {
     return this.enderecoDeEntregaService.findAll({});
   }
 
-  @Get('usuario/:user')
-  findByUsuario(@Param('user') user: string) {
-    return this.enderecoDeEntregaService.findAllByUsuario(user);
+  @Get('usuario')
+  findByUsuario(@Headers('userId') userId: string) {
+    return this.enderecoDeEntregaService.findAllByUsuario(userId);
   }
 
   /**
@@ -38,23 +38,23 @@ export class EnderecoDeEntregaController {
     * @param id
     * @return O endereço de entrega encontrado ou null se não encontrado ou não pertencer ao usuário
    */
-  @Get(':id/:user')
+  @Get(':id/')
   findOne(
     @Param('id') id: string,
-    @Param('user') user: string,
+    @Headers('userId') userId: string,
     // @Req() req: any // Substitua 'any' pelo tipo correto do request, se disponível
   ) {
     // const user = req.user; // Supondo que o middleware de autenticação tenha adicionado o usuário ao request
-    return this.enderecoDeEntregaService.findOne(user, id);
+    return this.enderecoDeEntregaService.findOne(userId, id);
   }
 
-  @Patch(':id/:user')
-  update(@Param('id') id: string, @Param('user') user: string, @Body() updateEnderecoDeEntregaDto: UpdateEnderecoDeEntregaDto) {
-    return this.enderecoDeEntregaService.update(id, user, updateEnderecoDeEntregaDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Headers('userId') userId: string, @Body() updateEnderecoDeEntregaDto: UpdateEnderecoDeEntregaDto) {
+    return this.enderecoDeEntregaService.update(id, userId, updateEnderecoDeEntregaDto);
   }
 
-  @Delete(':id/:user')
-  remove(@Param('id') id: string, @Param('user') user: string) {
-    return this.enderecoDeEntregaService.remove(id, user);
+  @Delete(':id')
+  remove(@Param('id') id: string, @Headers('userId') userId: string) {
+    return this.enderecoDeEntregaService.remove(id, userId);
   }
 }

@@ -9,19 +9,11 @@ import { ApiTags } from '@nestjs/swagger';
 export class ItemPedidoController {
   constructor(private readonly itemPedidoService: ItemPedidoService) {}
 
-  // @Post()
-  // create(@Body() createItemPedidoDto: CreateItemPedidoDto) {
-  //   return this.itemPedidoService.create(createItemPedidoDto);
-  // }
 
-  @Get('pedido/:pedidoId')
+  @Get(':pedidoId')
+  @ApiTags('Produtos de um Pedido')
   findAll(@Param('pedidoId') pedidoId: string) {
     return this.itemPedidoService.findAll(pedidoId);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.itemPedidoService.findOne(+id);
   }
 
   @Patch(':id')
