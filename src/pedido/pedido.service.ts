@@ -442,9 +442,9 @@ export class PedidoService {
   /**
    * Valida se o usuario comprou a compra para ter o selo nos comentarios
    */
-  async validaCompra(compraId: string): Promise<boolean> {
+  async verificaCompraRealizada(userId: string,compraId: string): Promise<boolean> {
     const request = await this.prisma.pedido.findUnique({
-      where: { pedido_uuid: compraId },
+      where: { pedido_uuid: compraId, usuario_uuid: userId },
       select: {
         status_pedido: {
           select: {

@@ -42,8 +42,9 @@ export class PedidoController {
   }
 
   @Get('validaCompra/:id')
-  validaCompra(@Param('id') id: string) : Promise<boolean> {
-    return this.pedidoService.validaCompra(id);
+  @ApiOperation({ summary: 'Valida se a compra foi realizada, verificando se os produtos foram entregues ' })
+  verificaCompraRealizada(@Headers('userId') userId: string, @Param('id') id: string) : Promise<boolean> {
+    return this.pedidoService.verificaCompraRealizada(userId, id);
   }
 
   @Patch('update-endereco/:id')
