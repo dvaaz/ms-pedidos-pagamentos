@@ -6,7 +6,7 @@ import { PagamentoService } from './pagamento.service';
 describe('PagamentoService', () => {
   let service: PagamentoService;
   let prisma: {
-    pedido: { findUnique: jest.Mock };
+    pedido: { findFirst: jest.Mock };
     metodos_de_pagamento: { findUnique: jest.Mock };
     status_pagamento: { findFirst: jest.Mock };
     pagamento: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
@@ -14,7 +14,7 @@ describe('PagamentoService', () => {
 
   beforeEach(async () => {
     prisma = {
-      pedido: { findUnique: jest.fn() },
+      pedido: { findFirst: jest.fn() },
       metodos_de_pagamento: { findUnique: jest.fn() },
       status_pagamento: { findFirst: jest.fn() },
       pagamento: {
@@ -42,7 +42,7 @@ describe('PagamentoService', () => {
   });
 
   it('should create payment splitting cents in the first installment', async () => {
-    prisma.pedido.findUnique.mockResolvedValue({
+    prisma.pedido.findFirst.mockResolvedValue({
       pedido_uuid: 'pedido-1',
       pedido_valor_total: 1001,
       endereco_de_entrega_uuid: 'endereco-1',
@@ -68,7 +68,7 @@ describe('PagamentoService', () => {
     });
 
     await expect(
-      service.create({
+      service.create('usuario-1', {
         pedido_uuid: 'pedido-1',
         metodos_de_pagamento_id: 1,
         pagamento_numero_parcelas: 3,
@@ -86,7 +86,7 @@ describe('PagamentoService', () => {
   });
 
   it('should create single installment payments with the full value', async () => {
-    prisma.pedido.findUnique.mockResolvedValue({
+    prisma.pedido.findFirst.mockResolvedValue({
       pedido_uuid: 'pedido-1',
       pedido_valor_total: 1000,
       endereco_de_entrega_uuid: 'endereco-1',
@@ -112,7 +112,7 @@ describe('PagamentoService', () => {
     });
 
     await expect(
-      service.create({
+      service.create('usuario-1', {
         pedido_uuid: 'pedido-1',
         metodos_de_pagamento_id: 1,
       }),
@@ -124,7 +124,7 @@ describe('PagamentoService', () => {
   });
 
   it('should reject installment payment without credit card', async () => {
-    prisma.pedido.findUnique.mockResolvedValue({
+    prisma.pedido.findFirst.mockResolvedValue({
       pedido_uuid: 'pedido-1',
       pedido_valor_total: 1000,
       endereco_de_entrega_uuid: 'endereco-1',
@@ -136,7 +136,7 @@ describe('PagamentoService', () => {
     });
 
     await expect(
-      service.create({
+      service.create('usuario-1', {
         pedido_uuid: 'pedido-1',
         metodos_de_pagamento_id: 2,
         pagamento_numero_parcelas: 2,
@@ -152,11 +152,14 @@ describe('PagamentoService', () => {
       pagamento_numero_parcelas: 1,
       pagamento_valor_primeira_parcela: 1000,
       pagamento_valor_parcelas: 1000,
+      pedido: { usuario_uuid: 'usuario-1' },
       status_pagamento: { status_pagamento_nome: 'AGUARDANDO_AUTH' },
       metodos_de_pagamento: { metodo_de_pagamento_nome: 'PIX' },
     });
 
-    await expect(service.getStatusPagamento('pagamento-1')).resolves.toEqual({
+    await expect(
+      service.getStatusPagamento('usuario-1', 'pagamento-1'),
+    ).resolves.toEqual({
       pagamento_uuid: 'pagamento-1',
       status_pagamento_nome: 'AGUARDANDO_AUTH',
     });
@@ -170,6 +173,7 @@ describe('PagamentoService', () => {
       pagamento_numero_parcelas: 1,
       pagamento_valor_primeira_parcela: 1000,
       pagamento_valor_parcelas: 1000,
+      pedido: { usuario_uuid: 'usuario-1' },
       status_pagamento: { status_pagamento_nome: 'AGUARDANDO_AUTH' },
       metodos_de_pagamento: { metodo_de_pagamento_nome: 'PIX' },
     });
@@ -188,7 +192,9 @@ describe('PagamentoService', () => {
       metodos_de_pagamento: { metodo_de_pagamento_nome: 'PIX' },
     });
 
-    await expect(service.efetuarPagamento('pagamento-1')).resolves.toEqual({
+    await expect(
+      service.efetuarPagamento('usuario-1', 'pagamento-1'),
+    ).resolves.toEqual({
       pagamento_uuid: 'pagamento-1',
       pedido_uuid: 'pedido-1',
       codigo_do_pagamento: 'codigo-1',
@@ -203,8 +209,26 @@ describe('PagamentoService', () => {
   it('should fail when the payment is not found', async () => {
     prisma.pagamento.findUnique.mockResolvedValue(null);
 
-    await expect(service.getStatusPagamento('missing')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.getStatusPagamento('usuario-1', 'missing'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('should reject payment access from a different owner', async () => {
+    prisma.pagamento.findUnique.mockResolvedValue({
+      pagamento_uuid: 'pagamento-1',
+      pedido_uuid: 'pedido-1',
+      codigo_do_pagamento: 'codigo-1',
+      pagamento_numero_parcelas: 1,
+      pagamento_valor_primeira_parcela: 1000,
+      pagamento_valor_parcelas: 1000,
+      pedido: { usuario_uuid: 'usuario-2' },
+      status_pagamento: { status_pagamento_nome: 'AGUARDANDO_AUTH' },
+      metodos_de_pagamento: { metodo_de_pagamento_nome: 'PIX' },
+    });
+
+    await expect(
+      service.getStatusPagamento('usuario-1', 'pagamento-1'),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

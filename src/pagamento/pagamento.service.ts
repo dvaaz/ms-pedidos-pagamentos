@@ -27,6 +27,9 @@ type PagamentoConsulta = {
   pagamento_numero_parcelas: number | null;
   pagamento_valor_primeira_parcela: number | null;
   pagamento_valor_parcelas: number | null;
+  pedido?: {
+    usuario_uuid: string;
+  };
   status_pagamento: {
     status_pagamento_nome: string;
   };
@@ -94,6 +97,11 @@ export class PagamentoService {
         pagamento_numero_parcelas: true,
         pagamento_valor_primeira_parcela: true,
         pagamento_valor_parcelas: true,
+        pedido: {
+          select: {
+            usuario_uuid: true,
+          },
+        },
         status_pagamento: {
           select: {
             status_pagamento_id: true,
@@ -124,6 +132,31 @@ export class PagamentoService {
     return pagamento;
   }
 
+  private async buscarPedidoDoUsuario(usuarioId: string, pedidoUuid: string) {
+    const pedido = await this.prisma.pedido.findFirst({
+      where: {
+        pedido_uuid: pedidoUuid,
+        usuario_uuid: usuarioId,
+      },
+      select: {
+        pedido_uuid: true,
+        pedido_valor_total: true,
+        endereco_de_entrega_uuid: true,
+        status_pedido: {
+          select: {
+            status_pedido_nome: true,
+          },
+        },
+      },
+    });
+
+    if (!pedido) {
+      throw new NotFoundException('Pedido não encontrado');
+    }
+
+    return pedido;
+  }
+
   private toPagamentoComStatus(
     pagamento: PagamentoConsulta,
   ): PagamentoComStatus {
@@ -147,28 +180,14 @@ export class PagamentoService {
     };
   }
 
-  async create(usuarioId: string,
+  async create(
+    usuarioId: string,
     createPagamentoDto: CreatePagamentoDto,
   ): Promise<PagamentoComStatus> {
-    const pedido = await this.prisma.pedido.findUnique({
-      where: { usuario_uuid: usuarioId,
-        pedido_uuid: createPagamentoDto.pedido_uuid
-       },
-      select: {
-        pedido_uuid: true,
-        pedido_valor_total: true,
-        endereco_de_entrega_uuid: true,
-        status_pedido: {
-          select: {
-            status_pedido_nome: true,
-          },
-        },
-      },
-    });
-
-    if (!pedido) {
-      throw new NotFoundException('Pedido não encontrado');
-    }
+    const pedido = await this.buscarPedidoDoUsuario(
+      usuarioId,
+      createPagamentoDto.pedido_uuid,
+    );
 
     if (
       !pedido.endereco_de_entrega_uuid ||
@@ -277,14 +296,25 @@ export class PagamentoService {
   async getStatusPagamento(userId: string, pagamentoUuid: string) {
     const pagamento = await this.buscarPagamento(pagamentoUuid);
 
+    if (pagamento.pedido?.usuario_uuid !== userId) {
+      throw new NotFoundException('Pagamento não encontrado');
+    }
+
     return {
       pagamento_uuid: pagamento.pagamento_uuid,
       status_pagamento_nome: pagamento.status_pagamento.status_pagamento_nome,
     };
   }
 
-  async efetuarPagamento(pagamentoUuid: string): Promise<PagamentoComStatus> {
+  async efetuarPagamento(
+    userId: string,
+    pagamentoUuid: string,
+  ): Promise<PagamentoComStatus> {
     const pagamentoAtual = await this.buscarPagamento(pagamentoUuid);
+
+    if (pagamentoAtual.pedido?.usuario_uuid !== userId) {
+      throw new NotFoundException('Pagamento não encontrado');
+    }
 
     if (
       this.normalize(pagamentoAtual.status_pagamento.status_pagamento_nome) !==
