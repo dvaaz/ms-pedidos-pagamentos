@@ -297,7 +297,7 @@ export class PagamentoService {
     const pagamento = await this.buscarPagamento(pagamentoUuid);
 
     if (!pagamento.pedido) {
-      throw new InternalServerErrorException('Pagamento está inconsistente');
+      throw new InternalServerErrorException('Pagamento sem pedido associado');
     }
 
     if (pagamento.pedido.usuario_uuid !== userId) {
@@ -317,7 +317,7 @@ export class PagamentoService {
     const pagamentoAtual = await this.buscarPagamento(pagamentoUuid);
 
     if (!pagamentoAtual.pedido) {
-      throw new InternalServerErrorException('Pagamento está inconsistente');
+      throw new InternalServerErrorException('Pagamento sem pedido associado');
     }
 
     if (pagamentoAtual.pedido.usuario_uuid !== userId) {
