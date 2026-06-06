@@ -147,11 +147,13 @@ export class PagamentoService {
     };
   }
 
-  async create(
+  async create(usuarioId: string,
     createPagamentoDto: CreatePagamentoDto,
   ): Promise<PagamentoComStatus> {
     const pedido = await this.prisma.pedido.findUnique({
-      where: { pedido_uuid: createPagamentoDto.pedido_uuid },
+      where: { usuario_uuid: usuarioId,
+        pedido_uuid: createPagamentoDto.pedido_uuid
+       },
       select: {
         pedido_uuid: true,
         pedido_valor_total: true,
@@ -272,7 +274,7 @@ export class PagamentoService {
     return this.toPagamentoComStatus(pagamento);
   }
 
-  async getStatusPagamento(pagamentoUuid: string) {
+  async getStatusPagamento(userId: string, pagamentoUuid: string) {
     const pagamento = await this.buscarPagamento(pagamentoUuid);
 
     return {
