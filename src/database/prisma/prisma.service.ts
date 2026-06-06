@@ -1,5 +1,5 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '../../generated/prisma/client.js';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from '../../generated/prisma/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -7,7 +7,8 @@ dotenv.config();
 @Injectable()
 export class PrismaService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy {
+  implements OnModuleInit, OnModuleDestroy
+{
   // private readonly logger = new Logger(PrismaService.name); // Logger para registrar mensagens de log
 
   constructor() {

@@ -8,11 +8,11 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/endereco_de_entrega.js'
-export type * from './models/item_pedido.js'
-export type * from './models/metodos_de_pagamento.js'
-export type * from './models/pagamento.js'
-export type * from './models/pedido.js'
-export type * from './models/status_pagamento.js'
-export type * from './models/status_pedido.js'
-export type * from './commonInputTypes.js'
+export type * from './models/endereco_de_entrega'
+export type * from './models/item_pedido'
+export type * from './models/metodos_de_pagamento'
+export type * from './models/pagamento'
+export type * from './models/pedido'
+export type * from './models/status_pagamento'
+export type * from './models/status_pedido'
+export type * from './commonInputTypes'
