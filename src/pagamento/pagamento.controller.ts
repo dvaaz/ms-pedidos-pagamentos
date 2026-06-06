@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  HttpCode,
+  HttpStatus,
   Get,
   Param,
   Patch,
@@ -15,6 +17,7 @@ export class PagamentoController {
   constructor(private readonly pagamentoService: PagamentoService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   create(
     @Headers('userId') userId: string,
     @Body() createPagamentoDto: CreatePagamentoDto,
@@ -23,11 +26,13 @@ export class PagamentoController {
   }
 
   @Get(':id/status')
+  @HttpCode(HttpStatus.OK)
   getStatus(@Headers('userId') userId: string, @Param('id') id: string) {
     return this.pagamentoService.getStatusPagamento(userId, id);
   }
 
   @Patch(':id/efetuar')
+  @HttpCode(HttpStatus.OK)
   efetuar(@Headers('userId') userId: string, @Param('id') id: string) {
     return this.pagamentoService.efetuarPagamento(userId, id);
   }

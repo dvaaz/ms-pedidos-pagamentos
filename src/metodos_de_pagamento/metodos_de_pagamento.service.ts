@@ -27,6 +27,19 @@ export class MetodosDePagamentoService {
   }
 
   /**
+   * Busca um método de pagamento pelo nome.
+   */
+  async findByName(nome: string): Promise<MetodoPagamentoModel | null> {
+    if (!nome || nome.trim() === '') {
+      return null;
+    }
+
+    return await this.prisma.metodos_de_pagamento.findFirst({
+      where: { metodo_de_pagamento_nome: nome.trim().toUpperCase() },
+    });
+  }
+
+  /**
    * Busca todos os métodos de pagamento
    * @param params
    * @returns

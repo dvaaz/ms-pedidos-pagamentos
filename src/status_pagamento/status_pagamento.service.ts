@@ -11,12 +11,10 @@ import {
 export class StatusPagamentoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Cria novo método de pagamento
-   * @param data
-   * @returns
-   */
-  async create(data: CreateStatusPagamentoDto): Promise<StatusPagamentoModel> {
+    /**
+     * Cria novo status de pagamento.
+     */
+    async create(data: CreateStatusPagamentoDto): Promise<StatusPagamentoModel> {
     if (!data.nome || data.nome.trim() === '') {
       throw new Error('O nome do método de pagamento é obrigatório');
     }
@@ -27,11 +25,9 @@ export class StatusPagamentoService {
   }
 
   /**
-   * Busca todos os métodos de pagamento
-   * @param params
-   * @returns
+   * Busca todos os status de pagamento.
    */
-  async findAll(params: {
+  async findAll(params:{
     skip?: number; // Número de registros a pular
     take?: number; // Número de registros a buscar
     cursor?: PrismaClient.status_pagamentoWhereUniqueInput; // Cursor para paginação
@@ -49,9 +45,7 @@ export class StatusPagamentoService {
   }
 
   /**
-   * Busca por um método por id
-   * @param input
-   * @returns
+   * Busca um status de pagamento pelo ID.
    */
   async findOne(input: number): Promise<StatusPagamentoModel | null> {
     try {
@@ -64,6 +58,19 @@ export class StatusPagamentoService {
         e.code === 'P2025'
       ) {
         throw new Error('Método de pagamento não encontrado');
+      }
+
+      /**
+       * Busca um status de pagamento pelo nome.
+       */
+      async findByName(nome: string): Promise<StatusPagamentoModel | null> {
+        if (!nome || nome.trim() === '') {
+          return null;
+        }
+
+        return await this.prisma.status_pagamento.findFirst({
+          where: { status_pagamento_nome: nome.trim().toUpperCase() },
+        });
       }
       throw e; // Para outros erros
     }

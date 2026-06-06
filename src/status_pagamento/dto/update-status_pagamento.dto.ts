@@ -1,3 +1,4 @@
-import { CreateMetodosDePagamentoDto } from 'src/metodos_de_pagamento/dto/create-metodos_de_pagamento.dto';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateStatusPagamentoDto } from './create-status_pagamento.dto';
 
-export class UpdateStatusPagamentoDto extends CreateMetodosDePagamentoDto {}
+export class UpdateStatusPagamentoDto extends PartialType(CreateStatusPagamentoDto) {}
