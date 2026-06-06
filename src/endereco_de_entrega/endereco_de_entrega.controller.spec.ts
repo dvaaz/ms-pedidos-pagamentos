@@ -11,7 +11,9 @@ describe('EnderecoDeEntregaController', () => {
       providers: [EnderecoDeEntregaService],
     }).compile();
 
-    controller = module.get<EnderecoDeEntregaController>(EnderecoDeEntregaController);
+    controller = module.get<EnderecoDeEntregaController>(
+      EnderecoDeEntregaController,
+    );
   });
 
   it('should be defined', () => {

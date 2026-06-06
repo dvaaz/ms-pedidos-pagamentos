@@ -1,3 +1,3 @@
 export class CreateStatusPagamentoDto {
-    nome: string
+  nome: string;
 }

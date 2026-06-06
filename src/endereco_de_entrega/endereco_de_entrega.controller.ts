@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Put, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  Put,
+  Headers,
+} from '@nestjs/common';
 import { EnderecoDeEntregaService } from './endereco_de_entrega.service';
 import { CreateEnderecoDeEntregaDto } from './dto/create-endereco_de_entrega.dto';
 import { endereco_de_entrega as EnderecoEntregaModel } from '../generated/prisma/client';
@@ -6,20 +17,24 @@ import { UpdateEnderecoDeEntregaDto } from './dto/update-endereco_de_entrega.dto
 
 @Controller('endereco')
 export class EnderecoDeEntregaController {
-  constructor(private readonly enderecoDeEntregaService: EnderecoDeEntregaService) {}
-    
+  constructor(
+    private readonly enderecoDeEntregaService: EnderecoDeEntregaService,
+  ) {}
+
   /**
    * Cria um novo endereço de entrega
-   * @param data 
-   * @returns 
+   * @param data
+   * @returns
    */
   @Post()
-    create(@Body() data: CreateEnderecoDeEntregaDto) : Promise<EnderecoEntregaModel> {
-        return this.enderecoDeEntregaService.create(data);
+  create(
+    @Body() data: CreateEnderecoDeEntregaDto,
+  ): Promise<EnderecoEntregaModel> {
+    return this.enderecoDeEntregaService.create(data);
   }
 
   /**
-   * Busca todos os endereços de entrega 
+   * Busca todos os endereços de entrega
    * @returns
    */
   @Get()
@@ -35,8 +50,8 @@ export class EnderecoDeEntregaController {
 
   /**
    * Busca um endereço de entrega por ID e verifica se pertence ao usuário autenticado
-    * @param id
-    * @return O endereço de entrega encontrado ou null se não encontrado ou não pertencer ao usuário
+   * @param id
+   * @return O endereço de entrega encontrado ou null se não encontrado ou não pertencer ao usuário
    */
   @Get(':id/')
   findOne(
@@ -49,8 +64,16 @@ export class EnderecoDeEntregaController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Headers('userId') userId: string, @Body() updateEnderecoDeEntregaDto: UpdateEnderecoDeEntregaDto) {
-    return this.enderecoDeEntregaService.update(id, userId, updateEnderecoDeEntregaDto);
+  update(
+    @Param('id') id: string,
+    @Headers('userId') userId: string,
+    @Body() updateEnderecoDeEntregaDto: UpdateEnderecoDeEntregaDto,
+  ) {
+    return this.enderecoDeEntregaService.update(
+      id,
+      userId,
+      updateEnderecoDeEntregaDto,
+    );
   }
 
   @Delete(':id')

@@ -9,7 +9,9 @@ describe('StatusPagamentoController', () => {
       controllers: [StatusPagamentoController],
     }).compile();
 
-    controller = module.get<StatusPagamentoController>(StatusPagamentoController);
+    controller = module.get<StatusPagamentoController>(
+      StatusPagamentoController,
+    );
   });
 
   it('should be defined', () => {

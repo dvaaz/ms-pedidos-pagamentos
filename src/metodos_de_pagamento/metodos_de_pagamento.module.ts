@@ -6,6 +6,6 @@ import { PrismaService } from 'src/database/prisma/prisma.service';
 @Module({
   controllers: [MetodosDePagamentoController],
   providers: [MetodosDePagamentoService, PrismaService],
-  exports: [MetodosDePagamentoService]
+  exports: [MetodosDePagamentoService],
 })
 export class MetodosDePagamentoModule {}

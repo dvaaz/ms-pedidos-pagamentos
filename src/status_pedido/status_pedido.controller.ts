@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { StatusPedidoService } from './status_pedido.service';
 import type { CreateStatusPedidoDto } from './dto/create-status_pedido.dto';
 import type { UpdateStatusPedidoDto } from './dto/update-status_pedido.dto';

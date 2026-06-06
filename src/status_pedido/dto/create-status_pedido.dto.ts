@@ -1,3 +1,3 @@
 export class CreateStatusPedidoDto {
-    nome: string
+  nome: string;
 }

@@ -13,7 +13,7 @@ import { StatusPedidoService } from 'src/status_pedido/status_pedido.service';
     PrismaService,
     ItemPedidoService,
     EnderecoDeEntregaService,
-    StatusPedidoService
+    StatusPedidoService,
   ],
 })
 export class PedidoModule {}

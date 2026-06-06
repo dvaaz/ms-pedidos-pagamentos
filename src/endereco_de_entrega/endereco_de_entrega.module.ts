@@ -7,6 +7,5 @@ import { PrismaService } from 'src/database/prisma/prisma.service';
   controllers: [EnderecoDeEntregaController],
   providers: [EnderecoDeEntregaService, PrismaService],
   exports: [EnderecoDeEntregaService],
-
 })
 export class EnderecoDeEntregaModule {}

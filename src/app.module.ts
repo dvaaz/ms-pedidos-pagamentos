@@ -16,10 +16,28 @@ import { PedidoModule } from './pedido/pedido.module';
 import { ItemPedidoModule } from './item_pedido/item_pedido.module';
 import { PagamentoModule } from './pagamento/pagamento.module';
 
-
 @Module({
-  imports: [PrismaModule, MetodosDePagamentoModule, StatusPedidoModule, StatusPagamentoModule, EnderecoDeEntregaModule, PedidoModule, ItemPedidoModule, PagamentoModule],
-  controllers: [AppController, MetodosDePagamentoController, StatusPagamentoController, StatusPedidoController],
-  providers: [AppService, MetodosDePagamentoService, StatusPagamentoService, StatusPedidoService],
+  imports: [
+    PrismaModule,
+    MetodosDePagamentoModule,
+    StatusPedidoModule,
+    StatusPagamentoModule,
+    EnderecoDeEntregaModule,
+    PedidoModule,
+    ItemPedidoModule,
+    PagamentoModule,
+  ],
+  controllers: [
+    AppController,
+    MetodosDePagamentoController,
+    StatusPagamentoController,
+    StatusPedidoController,
+  ],
+  providers: [
+    AppService,
+    MetodosDePagamentoService,
+    StatusPagamentoService,
+    StatusPedidoService,
+  ],
 })
 export class AppModule {}
