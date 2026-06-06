@@ -132,6 +132,25 @@ export class PagamentoService {
     return pagamento;
   }
 
+  private async buscarPagamentoDoUsuario(
+    userId: string,
+    pagamentoUuid: string,
+  ) {
+    const pagamento = await this.buscarPagamento(pagamentoUuid);
+
+    if (!pagamento.pedido) {
+      throw new InternalServerErrorException(
+        'Pagamento inconsistente: pedido associado não encontrado',
+      );
+    }
+
+    if (pagamento.pedido.usuario_uuid !== userId) {
+      throw new NotFoundException('Pagamento não encontrado');
+    }
+
+    return pagamento;
+  }
+
   private async buscarPedidoDoUsuario(usuarioId: string, pedidoUuid: string) {
     const pedido = await this.prisma.pedido.findUnique({
       where: {
@@ -294,15 +313,10 @@ export class PagamentoService {
   }
 
   async getStatusPagamento(userId: string, pagamentoUuid: string) {
-    const pagamento = await this.buscarPagamento(pagamentoUuid);
-
-    if (!pagamento.pedido) {
-      throw new InternalServerErrorException('Pagamento sem pedido associado');
-    }
-
-    if (pagamento.pedido.usuario_uuid !== userId) {
-      throw new NotFoundException('Pagamento não encontrado');
-    }
+    const pagamento = await this.buscarPagamentoDoUsuario(
+      userId,
+      pagamentoUuid,
+    );
 
     return {
       pagamento_uuid: pagamento.pagamento_uuid,
@@ -314,15 +328,10 @@ export class PagamentoService {
     userId: string,
     pagamentoUuid: string,
   ): Promise<PagamentoComStatus> {
-    const pagamentoAtual = await this.buscarPagamento(pagamentoUuid);
-
-    if (!pagamentoAtual.pedido) {
-      throw new InternalServerErrorException('Pagamento sem pedido associado');
-    }
-
-    if (pagamentoAtual.pedido.usuario_uuid !== userId) {
-      throw new NotFoundException('Pagamento não encontrado');
-    }
+    const pagamentoAtual = await this.buscarPagamentoDoUsuario(
+      userId,
+      pagamentoUuid,
+    );
 
     if (
       this.normalize(pagamentoAtual.status_pagamento.status_pagamento_nome) !==
