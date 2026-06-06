@@ -6,7 +6,7 @@ import { PagamentoService } from './pagamento.service';
 describe('PagamentoService', () => {
   let service: PagamentoService;
   let prisma: {
-    pedido: { findFirst: jest.Mock };
+    pedido: { findUnique: jest.Mock };
     metodos_de_pagamento: { findUnique: jest.Mock };
     status_pagamento: { findFirst: jest.Mock };
     pagamento: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
@@ -14,7 +14,7 @@ describe('PagamentoService', () => {
 
   beforeEach(async () => {
     prisma = {
-      pedido: { findFirst: jest.fn() },
+      pedido: { findUnique: jest.fn() },
       metodos_de_pagamento: { findUnique: jest.fn() },
       status_pagamento: { findFirst: jest.fn() },
       pagamento: {
@@ -42,7 +42,7 @@ describe('PagamentoService', () => {
   });
 
   it('should create payment splitting cents in the first installment', async () => {
-    prisma.pedido.findFirst.mockResolvedValue({
+    prisma.pedido.findUnique.mockResolvedValue({
       pedido_uuid: 'pedido-1',
       pedido_valor_total: 1001,
       endereco_de_entrega_uuid: 'endereco-1',
@@ -86,7 +86,7 @@ describe('PagamentoService', () => {
   });
 
   it('should create single installment payments with the full value', async () => {
-    prisma.pedido.findFirst.mockResolvedValue({
+    prisma.pedido.findUnique.mockResolvedValue({
       pedido_uuid: 'pedido-1',
       pedido_valor_total: 1000,
       endereco_de_entrega_uuid: 'endereco-1',
@@ -124,7 +124,7 @@ describe('PagamentoService', () => {
   });
 
   it('should reject installment payment without credit card', async () => {
-    prisma.pedido.findFirst.mockResolvedValue({
+    prisma.pedido.findUnique.mockResolvedValue({
       pedido_uuid: 'pedido-1',
       pedido_valor_total: 1000,
       endereco_de_entrega_uuid: 'endereco-1',
