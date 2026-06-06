@@ -144,6 +144,23 @@ describe('PagamentoService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('should reject payment creation for another user pedido', async () => {
+    prisma.pedido.findUnique.mockResolvedValue({
+      pedido_uuid: 'pedido-1',
+      usuario_uuid: 'usuario-2',
+      pedido_valor_total: 1000,
+      endereco_de_entrega_uuid: 'endereco-1',
+      status_pedido: { status_pedido_nome: 'PENDENTE' },
+    });
+
+    await expect(
+      service.create('usuario-1', {
+        pedido_uuid: 'pedido-1',
+        metodos_de_pagamento_id: 1,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
   it('should return payment status', async () => {
     prisma.pagamento.findUnique.mockResolvedValue({
       pagamento_uuid: 'pagamento-1',
