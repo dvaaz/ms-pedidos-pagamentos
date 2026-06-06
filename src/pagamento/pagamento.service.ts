@@ -8,6 +8,7 @@ import { uuidv7 } from 'uuidv7';
 import { PrismaService } from '../database/prisma/prisma.service';
 import { CreatePagamentoDto } from './dto/create-pagamento.dto';
 
+// Types auxiliares para evitar repetição de tipos complexos em vários métodos do serviço
 type PagamentoComStatus = {
   pagamento_uuid: string;
   pedido_uuid: string;
@@ -34,13 +35,14 @@ type PagamentoConsulta = {
   };
 };
 
+// O serviço de pagamento é responsável por toda a lógica relacionada à criação e atualização de pagamentos,
 @Injectable()
 export class PagamentoService {
   private readonly statusAguardandoAuth = 'AGUARDANDO_AUTH';
   private readonly statusPago = 'PAGO';
   private readonly metodoCartaoCredito = 'CARTAO_CREDITO';
   private readonly defaultNumeroParcelas = 1;
-  private readonly statusPedidoPendente = 'PENDENTE';
+  private readonly statusPedidoAceito = 'ACEITO';
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -176,10 +178,10 @@ export class PagamentoService {
     if (
       !pedido.status_pedido ||
       this.normalize(pedido.status_pedido.status_pedido_nome) !==
-        this.statusPedidoPendente
+        this.statusPedidoAceito
     ) {
       throw new BadRequestException(
-        'O pagamento só pode ser criado para pedidos pendentes',
+        'O pagamento só pode ser criado para pedidos aceitos',
       );
     }
 
