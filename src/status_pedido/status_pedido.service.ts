@@ -12,33 +12,8 @@ import {
 export class StatusPedidoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Função para fazer a mudança do status do pedido de acordo com a lógica de negócio. retorna o id do status atualizado
-   *
-   */
-  async updateStatusPedido(
-    id: string,
-  ): Promise<StatusPedidoModel['status_pedido_id']> {
-    // Aqui a função receberia o id do pedido e faria a mudança de status de acordo com a lógica de negócio, por exemplo, se o pedido for criado, ele recebe o status 'PENDENTE', depois de um tempo ele muda para 'ACEITO' ou 'REJEITADO' dependendo da validação do carrinho e do pagamento, depois disso ele pode mudar para 'EM PREPARAÇÃO', 'EM ENTREGA' e por fim 'ENTREGUE'.
-    // A implementação dessa função depende muito da lógica de negócio definida para o sistema, então deixarei ela em branco por enquanto.
-    if (!id) {
-      throw new Error('O ID do status do pedido é obrigatório');
-    }
-
-    // valida status do pedido atual
-    const status = await this.prisma.status_pedido.findFirst({
-      where: { status_pedido_nome: id },
-      select: {
-        status_pedido_id: true,
-        status_pedido_nome: true,
-      },
-    });
-    if (!status || !status.status_pedido_id || !status.status_pedido_nome) {
-      throw new Error('Status do pedido não encontrado');
-    }
-
     // lógica de atualização do status do pedido:
-    const arrayDeStatusRegistrados = [
+    private const arrayDeStatusRegistrados = [
       'CANCELADO',
       'DEVOLUCAO',
       'PENDENTE',
@@ -48,7 +23,38 @@ export class StatusPedidoService {
       'ENVIADO',
       'ENTREGUE',
     ];
-    const indexDoStatusAtual = arrayDeStatusRegistrados.indexOf(
+
+  /**
+   * Função para fazer a mudança do status do pedido de acordo com a lógica de negócio. retorna o id do status atualizado
+   *
+   */
+  async updateStatusPedido(
+    nome: string,
+  ): Promise<StatusPedidoModel['status_pedido_id']> {
+    // Aqui a função RECEBE o id do pedido e faria a mudança de status de acordo com a lógica de negócio, por exemplo, se o pedido for criado, ele recebe o status 'PENDENTE', depois de um tempo ele muda para 'ACEITO' ou 'REJEITADO' dependendo da validação do carrinho e do pagamento, depois disso ele pode mudar para 'EM PREPARAÇÃO', 'EM ENTREGA' e por fim 'ENTREGUE'.
+    // A implementação dessa função depende muito da lógica de negócio definida para o sistema, então deixarei ela em branco por enquanto.
+    if (!nome) {
+      throw new Error('O nome do status do pedido é obrigatório');
+    }
+    // verifica se o status do pedido existe
+    if (!this.arrayDeStatusRegistrados.includes(nome.trim().toUpperCase())) {
+      throw new Error('Status do pedido não registrado');
+    }
+
+    // valida status do pedido atual
+    const status = await this.prisma.status_pedido.findFirst({
+      where: { status_pedido_nome: nome.trim().toUpperCase() },
+      select: {
+        status_pedido_id: true,
+        status_pedido_nome: true,
+      },
+    });
+    if (!status || !status.status_pedido_id || !status.status_pedido_nome) {
+      throw new Error('Status do pedido não encontrado');
+    }
+
+  
+    const indexDoStatusAtual = this.arrayDeStatusRegistrados.indexOf(
       status.status_pedido_nome,
     );
 
@@ -57,15 +63,15 @@ export class StatusPedidoService {
     }
 
     if (
-      status.status_pedido_nome === arrayDeStatusRegistrados[0] ||
-      status.status_pedido_nome === arrayDeStatusRegistrados[1]
+      status.status_pedido_nome === this.arrayDeStatusRegistrados[0] ||
+      status.status_pedido_nome === this.arrayDeStatusRegistrados[1]
     ) {
       throw new Error(`Não é permitido atualizar o status do pedido.`);
     }
 
     if (
       status.status_pedido_nome ===
-      arrayDeStatusRegistrados[arrayDeStatusRegistrados.length - 1]
+      this.arrayDeStatusRegistrados[this.arrayDeStatusRegistrados.length - 1]
     ) {
       throw new Error(
         `O pedido já foi entregue, não é permitido atualizar o status do pedido.`,
@@ -73,7 +79,7 @@ export class StatusPedidoService {
     }
 
     // armazena o nome do novo status e faz a busca do id deste
-    const novoStatus = arrayDeStatusRegistrados[indexDoStatusAtual + 1];
+    const novoStatus = this.arrayDeStatusRegistrados[indexDoStatusAtual + 1];
 
     // Primeiro, busca o status pelo nome para obter o ID
     const statusEncontrado = await this.prisma.status_pedido.findFirst({

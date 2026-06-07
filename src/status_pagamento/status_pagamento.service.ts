@@ -9,40 +9,41 @@ import {
 
 @Injectable()
 export class StatusPagamentoService {
+
+      // lógica de atualização do status do pedido:
+    private const arrayDeStatusRegistrados = [
+      'APROVADO',
+      'REJEITADO',
+      'AGUARDANDO_AUTH',
+    ];
+
   constructor(private readonly prisma: PrismaService) {}
 
-    /**
-     * Cria novo status de pagamento.
-     */
-    async create(data: CreateStatusPagamentoDto): Promise<StatusPagamentoModel> {
-    if (!data.nome || data.nome.trim() === '') {
-      throw new Error('O nome do método de pagamento é obrigatório');
-    }
-    const model: Omit<StatusPagamentoModel, 'status_pagamento_id'> = {
-      status_pagamento_nome: data.nome.trim().toUpperCase(),
-    };
-    return await this.prisma.status_pagamento.create({ data: model });
+/**
+ * Funcao para alterar o status do pagamento através de seu nome
+  * Vai depender de resposta externa. 
+*/
+async updateStatusPagamento(nome: string): Promise<StatusPagamentoModel['status_pagamento_id']> {
+  if (!nome) {
+    throw new Error('O nome do status do pagamento é obrigatório');
   }
+  // verifica se o status do pagamento esta registrado
+  if (!this.arrayDeStatusRegistrados.includes(nome.trim().toUpperCase())) {
+    throw new Error('Status do pagamento não registrado');
+  }
+  
 
-  /**
-   * Busca todos os status de pagamento.
-   */
-  async findAll(params:{
-    skip?: number; // Número de registros a pular
-    take?: number; // Número de registros a buscar
-    cursor?: PrismaClient.status_pagamentoWhereUniqueInput; // Cursor para paginação
-    where?: PrismaClient.status_pagamentoWhereInput; // Filtros para a consulta
-    orderBy?: PrismaClient.status_pagamentoOrderByWithRelationInput; // Ordenação dos resultados
-  }): Promise<StatusPagamentoModel[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return await this.prisma.status_pagamento.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
+  const status = await this.prisma.status_pagamento.findFirst({
+    where: { status_pagamento_nome: nome.trim().toUpperCase() },
+    select: {
+      status_pagamento_id: true,
+      status_pagamento_nome: true,
+    },
+  });
+  if (!status || !status.status_pagamento_id || !status.status_pagamento_nome) {
+    throw new Error('Status do pagamento não encontrado');
   }
+}
 
   /**
    * Busca um status de pagamento pelo ID.
@@ -111,22 +112,5 @@ export class StatusPagamentoService {
     }
   }
 
-  /**
-   * Remover método de pagamento
-   * @param id
-   * @returns
-   */
-  async remove(where: PrismaClient.status_pagamentoWhereUniqueInput) {
-    try {
-      return await this.prisma.status_pagamento.delete({ where });
-    } catch (e) {
-      if (
-        e instanceof PrismaClient.PrismaClientKnownRequestError &&
-        e.code === 'P2025'
-      ) {
-        throw new Error('Método de pagamento não encontrado');
-      }
-      throw e;
-    }
-  }
+
 }
