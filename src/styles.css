@@ -1,0 +1,537 @@
+:root {
+  --blue: #3150f5;
+  --blue-strong: #2145f2;
+  --ink: #0e1726;
+  --muted: #5f6570;
+  --line: #111827;
+  --soft-line: #d9dde5;
+  --cream: #fffef1;
+  --footer: #111b2a;
+  --footer-text: #d6deeb;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #050505;
+  background: #777;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.page {
+  min-height: 100vh;
+  background: #fff;
+}
+
+.topbar {
+  height: 98px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 31px 48px 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.brand,
+.secure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandMark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #7158ff 0%, #4b32f3 100%);
+  color: white;
+  font-weight: 800;
+}
+
+.brand strong {
+  font-size: 18px;
+}
+
+.secure {
+  gap: 10px;
+  font-size: 11px;
+  line-height: 1.15;
+}
+
+.secure span {
+  display: grid;
+}
+
+.secure strong {
+  font-size: 11px;
+}
+
+.checkoutLayout {
+  display: grid;
+  grid-template-columns: minmax(520px, 704px) minmax(260px, 375px);
+  gap: 78px;
+  align-items: start;
+  padding: 60px 40px 154px 88px;
+}
+
+.checkoutColumn {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.checkoutSection {
+  position: relative;
+  border: 1px solid var(--line);
+}
+
+.sectionLegend {
+  height: 45px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding-left: 31px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.sectionLegend span {
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.sectionBody {
+  padding: 22px 31px 25px;
+}
+
+.personalData {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.personalData div {
+  display: flex;
+}
+
+.personalData dt {
+  width: 70px;
+  text-align: right;
+  padding-right: 20px;
+}
+
+.personalData dd {
+  margin: 0;
+}
+
+.paymentOptions {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+}
+
+.paymentOptions label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.delivery .sectionBody {
+  padding-top: 16px;
+}
+
+.deliverySwitch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.deliverySwitch button {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  border: 0;
+  background: white;
+  color: #111;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.deliverySwitch button.active {
+  background: var(--blue);
+  color: white;
+}
+
+.pickupInfo strong {
+  display: block;
+  padding: 22px 0 11px;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.pickupInfo p {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border: 1px solid #aeb29c;
+  border-radius: 5px;
+  background: var(--cream);
+  font-size: 13px;
+  text-align: center;
+}
+
+.addressSelected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 17px;
+  border: 1px solid #aeb29c;
+  border-radius: 5px;
+  background: var(--cream);
+  font-size: 13px;
+}
+
+.addressSelected button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.summary {
+  min-height: 435px;
+  padding: 58px 25px 30px 30px;
+  border-radius: 0 0 8px 8px;
+  background: white;
+  box-shadow: 0 4px 5px rgb(0 0 0 / 22%);
+}
+
+.summary h2 {
+  margin: 0 0 27px;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.summaryLine,
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+.summaryLine strong {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.summaryTotal {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  font-weight: 800;
+}
+
+.primaryAction {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--blue);
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primaryAction:hover,
+.deliverySwitch button.active:hover,
+.createAddress:hover {
+  background: var(--blue-strong);
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+  gap: 84px;
+  padding: 42px 32px 0;
+  min-height: 272px;
+  background: var(--footer);
+  color: var(--footer-text);
+  font-size: 12px;
+}
+
+.footer h3 {
+  margin: 0 0 22px;
+  color: white;
+  font-size: 15px;
+}
+
+.footer p,
+.footer a {
+  margin: 0 0 12px;
+  color: var(--footer-text);
+  line-height: 1.5;
+}
+
+.footer a {
+  display: block;
+}
+
+.footer p svg {
+  margin-right: 8px;
+  vertical-align: text-bottom;
+}
+
+.social {
+  display: flex;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.footer small {
+  grid-column: 1 / -1;
+  display: block;
+  padding: 27px 0 9px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  text-align: center;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 40%);
+  z-index: 20;
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 470px);
+  background: white;
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 20%);
+}
+
+.modal h2 {
+  margin: 0;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.createAddress {
+  width: calc(100% - 32px);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--blue);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.addressOptions {
+  display: grid;
+  gap: 10px;
+  padding: 0 16px 18px;
+}
+
+.addressOptions button {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--soft-line);
+  background: var(--cream);
+  text-align: left;
+  cursor: pointer;
+}
+
+.addressOptions span {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.addressFormModal {
+  width: min(100%, 540px);
+}
+
+.modalSwitch {
+  margin: 15px 10px 18px;
+  border-radius: 3px;
+}
+
+.modalSwitch button {
+  height: 34px;
+  gap: 22px;
+  font-size: 11px;
+}
+
+.addressForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 22px;
+  padding: 0 10px 16px;
+}
+
+.addressForm label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.addressForm input {
+  height: 34px;
+  border: 1px solid #747474;
+  background: var(--cream);
+  padding: 7px 9px;
+}
+
+.addressForm .full {
+  grid-column: 1 / -1;
+}
+
+.zipHelp {
+  align-self: end;
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.formActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.formActions button {
+  min-width: 126px;
+  height: 38px;
+  border: 1px solid var(--blue);
+  border-radius: 5px;
+  background: white;
+  color: var(--blue);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.formActions button[type='submit'] {
+  background: var(--blue);
+  color: white;
+}
+
+@media (max-width: 960px) {
+  .topbar {
+    height: auto;
+    padding: 24px;
+  }
+
+  .checkoutLayout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 32px 24px 64px;
+  }
+
+  .summary {
+    min-height: auto;
+  }
+
+  .footer {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    align-items: center;
+  }
+
+  .checkoutLayout {
+    padding: 24px 14px 48px;
+  }
+
+  .sectionLegend {
+    padding-left: 14px;
+  }
+
+  .sectionBody {
+    padding: 18px 14px;
+  }
+
+  .deliverySwitch button {
+    gap: 12px;
+  }
+
+  .footer {
+    grid-template-columns: 1fr;
+    padding: 32px 24px 0;
+  }
+
+  .addressForm {
+    grid-template-columns: 1fr;
+  }
+
+  .zipHelp {
+    justify-self: stretch;
+    justify-content: space-between;
+  }
+}
