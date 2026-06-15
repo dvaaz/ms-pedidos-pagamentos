@@ -1,0 +1,27 @@
+/* Logo do ShirtStore: quadrado com gradiente roxo→rosa e a letra "S" branca. */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(to bottom right, #7B4FDB, #E040A0);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* size="sm" → w-10 h-10 text-xl rounded-lg */
+.sm {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  border-radius: 0.5rem;
+}
+
+/* size="md" → w-16 h-16 text-3xl rounded-2xl */
+.md {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  border-radius: 1rem;
+}

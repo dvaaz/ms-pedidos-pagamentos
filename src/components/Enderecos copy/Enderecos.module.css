@@ -1,0 +1,185 @@
+/* Gerenciador de endereços (form + lista). */
+.form > * + * {
+  margin-top: 1rem;            /* space-y-4 */
+}
+
+.editing {
+  margin-bottom: 1rem;         /* mb-4 */
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: #6b7280;              /* text-gray-500 */
+}
+
+.hint {
+  margin-top: 0.375rem;        /* mt-1.5 */
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #6b7280;              /* text-gray-500 */
+}
+
+.hintError {
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #dc2626;              /* text-red-600 */
+}
+
+.grid2 {
+  display: grid;
+  gap: 1rem;                   /* gap-4 */
+}
+
+@media (min-width: 640px) {    /* sm:grid-cols-2 */
+  .grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.error {
+  border-radius: 0.5rem;
+  background-color: #fef2f2;   /* bg-red-50 */
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #dc2626;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;                /* gap-3 */
+}
+
+.submit {
+  border-radius: 0.5rem;
+  background-image: linear-gradient(to right, #7B4FDB, #E040A0);
+  padding: 0.625rem 1.25rem;   /* py-2.5 px-5 */
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.submit:hover {
+  opacity: 0.95;
+}
+
+.submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cancel {
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;      /* py-2.5 px-4 */
+  font-weight: 500;
+  color: #4b5563;              /* text-gray-600 */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition-property: background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.cancel:hover {
+  background-color: #f3f4f6;   /* hover:bg-gray-100 */
+}
+
+/* Lista de endereços cadastrados */
+.list {
+  margin-top: 1.5rem;          /* mt-6 */
+  border-top: 1px solid #f3f4f6;
+  padding-top: 1.5rem;         /* pt-6 */
+}
+
+.empty {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #6b7280;
+}
+
+.items > * + * {
+  margin-top: 0.75rem;         /* space-y-3 */
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;     /* items-start */
+  justify-content: space-between;
+  gap: 1rem;                   /* gap-4 */
+  border-radius: 0.5rem;
+  border: 1px solid #f3f4f6;
+  padding: 1rem;               /* p-4 */
+}
+
+.itemName {
+  font-weight: 600;            /* font-semibold */
+  color: #111827;
+}
+
+.itemDetail {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #4b5563;              /* text-gray-600 */
+}
+
+.itemCep {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #9ca3af;              /* text-gray-400 */
+}
+
+.itemActions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;                 /* gap-2 */
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;                /* gap-1 */
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;   /* py-1.5 px-3 */
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: #7B4FDB;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition-property: background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.editBtn:hover {
+  background-color: rgba(123, 79, 219, 0.1);   /* hover:bg-[#7B4FDB]/10 */
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: #dc2626;              /* text-red-600 */
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition-property: background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.deleteBtn:hover {
+  background-color: #fef2f2;   /* hover:bg-red-50 */
+}

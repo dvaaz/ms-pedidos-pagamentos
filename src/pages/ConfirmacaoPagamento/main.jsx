@@ -14,8 +14,8 @@ import {
   Phone,
   Mail
 } from 'lucide-react';
-import { checkoutMock } from './data/checkoutMock';
-import { checkoutGateway } from './services/apiGateway';
+import { checkoutMock } from '../../data/checkoutMock';
+import { checkoutGateway } from '../../services/apiGateway';
 import './styles.css';
 
 function Header() {
