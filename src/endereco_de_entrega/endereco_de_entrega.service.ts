@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { uuidv7 } from 'uuidv7'; // Importa a função uuidv7 para gerar UUIDs
-import { PrismaService } from 'src/database/prisma/prisma.service';
+import { EnderecoDeEntregaRepository } from 'src/database/endereco_de_entrega.repository';
 import {
   Prisma as PrismaClient,
   endereco_de_entrega as EnderecoEntregaModel,
@@ -13,7 +13,7 @@ import {
 
 @Injectable()
 export class EnderecoDeEntregaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly repository: EnderecoDeEntregaRepository) { }
 
   /**
    * Cria um novo endereço de entrega
@@ -34,14 +34,13 @@ export class EnderecoDeEntregaService {
       // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
 
       // Verifica se o usuario possui no máximo 3 endereços cadastrados
-      const count = await this.prisma.endereco_de_entrega.count({
-        where: { endereco_usuario_uuid: data.destinatario.trim() },
-      });
-      if (count >= 3) {
+      const canCreate = await this.repository.countMaxEndereco(data.destinatario.trim());
+      if (canCreate == false) {
         throw new Error(
           'O usuário já possui o número máximo de endereços cadastrados',
         );
       }
+
 
       const model: Omit<
         EnderecoEntregaModel,
@@ -56,7 +55,8 @@ export class EnderecoDeEntregaService {
         endereco_municipio: data.municipio ? data.municipio.trim() : '',
         endereco_uf: data.uf ? data.uf.trim().toUpperCase() : '',
       };
-      return await this.prisma.endereco_de_entrega.create({ data: model });
+
+      return await this.repository.create(model);
     } catch (e) {
       throw new Error(`Erro ao criar endereço de entrega: ${e.message}`);
     }
@@ -64,25 +64,11 @@ export class EnderecoDeEntregaService {
 
   /**
    * Busca todos os endereços de entrega (rota Admin)
-   * @param params
    * @returns
    */
-  async findAll(params: {
-    skip?: number; // Número de registros a pular
-    take?: number; // Número de registros a buscar
-    cursor?: PrismaClient.endereco_de_entregaWhereUniqueInput; // Cursor para paginação
-    where?: PrismaClient.endereco_de_entregaWhereInput; // Filtros para a consulta
-    orderBy?: PrismaClient.endereco_de_entregaOrderByWithRelationInput; // Ordenação dos resultados
-  }): Promise<EnderecoEntregaModel[]> {
+  async findAll() {
     try {
-      const { skip, take, cursor, where, orderBy } = params;
-      return await this.prisma.endereco_de_entrega.findMany({
-        skip,
-        take,
-        cursor,
-        where,
-        orderBy,
-      });
+      return await this.repository.findAll({});
     } catch (e) {
       throw new Error(`Erro ao buscar endereços de entrega: ${e.message}`);
     }
@@ -93,14 +79,17 @@ export class EnderecoDeEntregaService {
    * @param usuario_uuid
    * @returns
    */
-  async findAllByUsuario(user: string): Promise<EnderecoEntregaModel[]> {
+  async findAllByUsuario(user: string) {
     try {
       // Verifica se o usuario_uuid é válido
       // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
-      return await this.prisma.endereco_de_entrega.findMany({
-        where: { endereco_usuario_uuid: user },
-        orderBy: { endereco_created_at: 'desc' },
-      });
+      const trimmedUser = user.trim();
+      if (trimmedUser && trimmedUser !== '') {
+        return await this.repository.findAllByUser(trimmedUser);
+      }
+
+      throw new Error("Usuário não informado");
+
     } catch (e) {
       throw new Error(
         `Erro ao buscar endereços de entrega do usuário: ${e.message}`,
@@ -119,13 +108,7 @@ export class EnderecoDeEntregaService {
   ): Promise<EnderecoEntregaModel | null> {
     // Verifica se o usuario_uuid é válido
     // TODO: Verificar se o usuário existe no sistema, caso contrário, lançar um erro
-    const endereco = await this.prisma.endereco_de_entrega
-      .findUnique({
-        where: { endereco_uuid: input },
-      })
-      .catch((e) => {
-        throw new Error(`Erro ao buscar endereço de entrega: ${e.message}`);
-      });
+    const endereco = await this.repository.findOne(input);
 
     if (!endereco) {
       throw new Error('Endereço de entrega não encontrado');
@@ -150,9 +133,7 @@ export class EnderecoDeEntregaService {
   ): Promise<EnderecoEntregaModel> {
     try {
       // Verifica se o endereço existe antes de tentar atualizar
-      const existing = await this.prisma.endereco_de_entrega.findUnique({
-        where: { endereco_uuid: id, endereco_usuario_uuid: user },
-      });
+      const existing = await this.repository.findOne(id);
       // Se o endereço não existir, lança um erro
       if (!existing) {
         throw new Error('Endereço de entrega não encontrado');
@@ -182,14 +163,7 @@ export class EnderecoDeEntregaService {
         updateData.endereco_uf = data.uf.trim().toUpperCase();
       }
 
-      return await this.prisma.endereco_de_entrega.update({
-        // cria um objeto de atualização com os campos fornecidos
-        where: { endereco_uuid: id, endereco_usuario_uuid: user },
-        data: {
-          ...updateData,
-          endereco_updated_at: new Date(),
-        },
-      });
+      return await this.repository.update(id, updateData);
     } catch (e) {
       throw new Error(`Erro ao atualizar endereço de entrega: ${e.message}`);
     }
@@ -203,17 +177,13 @@ export class EnderecoDeEntregaService {
   async remove(id: string, user: string): Promise<boolean> {
     try {
       // Verifica se o endereço existe antes de tentar deletar
-      const existing = await this.prisma.endereco_de_entrega.findUnique({
-        where: { endereco_uuid: id, endereco_usuario_uuid: user },
-      });
+      const existing = await this.repository.findOne(id);
       // Se o endereço não existir, retorna false
       if (!existing) {
         return false;
       }
       // Tenta deletar o endereço
-      await this.prisma.endereco_de_entrega.delete({
-        where: { endereco_uuid: id, endereco_usuario_uuid: user },
-      });
+      await this.repository.remove(id);
       // Se a deleção for bem-sucedida, retorna true
       return true;
     } catch (e) {

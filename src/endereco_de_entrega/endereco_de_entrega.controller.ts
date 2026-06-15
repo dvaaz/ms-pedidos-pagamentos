@@ -19,7 +19,7 @@ import { UpdateEnderecoDeEntregaDto } from './dto/update-endereco_de_entrega.dto
 export class EnderecoDeEntregaController {
   constructor(
     private readonly enderecoDeEntregaService: EnderecoDeEntregaService,
-  ) {}
+  ) { }
 
   /**
    * Cria um novo endereço de entrega
@@ -37,14 +37,15 @@ export class EnderecoDeEntregaController {
    * Busca todos os endereços de entrega
    * @returns
    */
-  @Get()
-  // Tera de verificar se o usuário é admin ou não, para retornar todos os endereços ou apenas os do usuário
-  findAll() {
-    return this.enderecoDeEntregaService.findAll({});
-  }
+  // // desativado
+  // @Get()
+  // // TODO: Tera de verificar se o usuário é admin ou não, para retornar todos os endereços ou apenas os do usuário
+  // findAll() {
+  //   return this.enderecoDeEntregaService.findAll({});
+  // }
 
   @Get('usuario')
-  findByUsuario(@Headers('userId') userId: string) {
+  findAllUsuario(@Headers('userId') userId: string) {
     return this.enderecoDeEntregaService.findAllByUsuario(userId);
   }
 
