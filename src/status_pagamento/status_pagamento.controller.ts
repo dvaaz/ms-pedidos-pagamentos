@@ -16,13 +16,13 @@ export class StatusPagamentoController {
     private readonly StatusPagamentoService: StatusPagamentoService,
   ) {}
 
-  @Get()
-  findAll(): Promise<StatusPagamentoModel[]> {
-    return this.StatusPagamentoService.findAll({});
-  }
+  // @Get()
+  // findAll(): Promise<StatusPagamentoModel[]> {
+  //   return this.StatusPagamentoService.findAll({});
+  // }
 
-  @Get('/:id')
-  findOne(@Param('id') id: number): Promise<StatusPagamentoModel | null> {
-    return this.StatusPagamentoService.findOne(+id); // o parametro está vindo como string o '+' alterna para number
-  }
+  // @Get('/:id')
+  // findOne(@Param('id') id: number): Promise<StatusPagamentoModel | null> {
+  //   return this.StatusPagamentoService.findOne(+id); // o parametro está vindo como string o '+' alterna para number
+  // }
 }

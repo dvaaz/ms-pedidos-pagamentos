@@ -231,9 +231,9 @@ export class PagamentoService {
       );
     }
 
-    const metodo = await this.prisma.metodos_de_pagamento.findUnique({
+    const metodo = await this.prisma.metodos_de_pagamento.findFirst({
       where: {
-        metodos_de_pagamento_id: createPagamentoDto.metodos_de_pagamento_id,
+        metodo_de_pagamento_nome: createPagamentoDto.metodos_de_pagamento_nome,
       },
       select: {
         metodos_de_pagamento_id: true,
