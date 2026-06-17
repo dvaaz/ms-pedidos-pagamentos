@@ -20,6 +20,7 @@ export class StatusPedidoController {
   // create(@Body() createStatusPedidoDto: CreateStatusPedidoDto): Promise<StatusPedidoModel> {
   //   return this.StatusPedidoService.create(createStatusPedidoDto);
   // }
+  //
 
   @Get()
   findAll(): Promise<StatusPedidoModel[]> {
