@@ -17,6 +17,7 @@ node_modules
 /dist
 /node_modules
 /build
+/src/generated/client
 
 # Logs
 logs

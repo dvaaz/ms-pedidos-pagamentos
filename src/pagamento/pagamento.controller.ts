@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { CreatePagamentoDto } from './dto/create-pagamento.dto';
 import { PagamentoService } from './pagamento.service';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('pagamento')
 export class PagamentoController {
@@ -24,6 +25,15 @@ export class PagamentoController {
   ) {
     return this.pagamentoService.create(userId, createPagamentoDto);
   }
+
+    @Get('/h')
+    @ApiOperation({
+      summary:
+        'Health Check: ' +'Pagamento'
+    })
+    healthCheck() {
+      return true
+    }
 
   @Get(':id/status')
   @HttpCode(HttpStatus.OK)
