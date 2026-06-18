@@ -19,5 +19,6 @@ export class FullPedidoDto {
     produto_nome: string;
     preco_unitario: string;
     quantidade: number;
+    id_produto: number;
   }[];
 }

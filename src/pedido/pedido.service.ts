@@ -23,6 +23,7 @@ import { ItemPedidoService } from '../item_pedido/item_pedido.service';
 import { StatusPedidoService } from '../status_pedido/status_pedido.service.js';
 import { FullPedidoDto } from './dto/full-pedido.dto.js';
 import { error } from 'console';
+import { ResponseListaPedidoDTO } from './dto/response-lista-pedido.dto.js';
 
 @Injectable()
 export class PedidoService {
@@ -88,6 +89,7 @@ export class PedidoService {
               item_pedido_nome_produto: true,
               item_pedido_preco: true,
               item_pedido_quantidade: true,
+              item_pedido_id: true
             },
           },
         },
@@ -122,6 +124,7 @@ export class PedidoService {
         produto_nome: item.item_pedido_nome_produto,
         preco_unitario: this.valueToCentsSimple(item.item_pedido_preco),
         quantidade: item.item_pedido_quantidade,
+        id_produto: item.item_pedido_id
       })),
     };
 
@@ -269,7 +272,7 @@ export class PedidoService {
    * @param userId
    * @returns
    */
-  async findAll(
+  async findAllComplete(
     userId: string,
   ): Promise<Omit<FullPedidoDto, 'endereco_entrega'>[]> {
     try {
@@ -290,6 +293,7 @@ export class PedidoService {
               item_pedido_nome_produto: true,
               item_pedido_preco: true,
               item_pedido_quantidade: true,
+              item_pedido_id: true
             },
           },
         },
@@ -322,6 +326,7 @@ export class PedidoService {
             produto_nome: item.item_pedido_nome_produto,
             preco_unitario: this.valueToCentsSimple(item.item_pedido_preco),
             quantidade: item.item_pedido_quantidade,
+            id_produto: item.item_pedido_id
           })),
         }),
       );
@@ -333,6 +338,59 @@ export class PedidoService {
       );
     }
   }
+
+  /**
+   * Find all que traz apenas a UUId do Pedido, status, quando foi criado o pedido
+   */
+  async findAllSimple(userId: string): Promise<ResponseListaPedidoDTO[]> {
+try {
+      const pedidos = await this.prisma.pedido.findMany({
+        where: { usuario_uuid: userId },
+        select: {
+          pedido_uuid: true,
+          pedido_valor_total: true,
+          pedido_created_at: true,
+          status_pedido: {
+            select: {
+              status_pedido_nome: true,
+            },
+          }
+        },
+      });
+      if (!pedidos || pedidos.length === 0) {
+        throw new NotFoundException(`Nenhum pedido encontrado para o usuário.`);
+      }
+      if (
+        pedidos.some(
+          (pedido) =>
+            !pedido.status_pedido || !pedido.status_pedido.status_pedido_nome,
+        )
+      ) {
+        throw new NotFoundException(
+          `Status do pedido não encontrado para um ou mais pedidos. Contatar o Administrador`,
+        );
+      }
+
+      const response: ResponseListaPedidoDTO[] = pedidos.map(
+        (pedido) => ({
+          pedido_uuid: pedido.pedido_uuid,
+          pedido_valor_total: this.valueToCentsSimple(
+            pedido.pedido_valor_total,
+          ),
+          status_pedido:
+            pedido.status_pedido?.status_pedido_nome || 'Status não encontrado',
+          pedido_created_at: pedido.pedido_created_at
+        }),
+      );
+
+      return response;
+    } catch (error) {
+      throw new BadRequestException(
+        `Não foi possivel encontrar os pedidos ${error}`,
+      );
+    }
+  }
+  
 
   /**
    *

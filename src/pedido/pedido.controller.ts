@@ -49,8 +49,12 @@ export class PedidoController {
   }
 
   @Get()
+  @ApiOperation({
+    summary:
+    'Busca pedidos de um usuário. Retorna Id de pedido e status'
+  })
   findAll(@Headers('userId') userId: string) {
-    return this.pedidoService.findAll(userId);
+    return this.pedidoService.findAllSimple(userId);
   }
 
   @Get('full/:pedidoId')

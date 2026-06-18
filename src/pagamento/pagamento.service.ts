@@ -132,6 +132,12 @@ export class PagamentoService {
     return pagamento;
   }
 
+  /**
+   * Buscar pagamento do usuário
+   * @param userId 
+   * @param pagamentoUuid 
+   * @returns 
+   */
   private async buscarPagamentoDoUsuario(
     userId: string,
     pagamentoUuid: string,
@@ -145,11 +151,12 @@ export class PagamentoService {
     }
 
     if (pagamento.pedido.usuario_uuid !== userId) {
-      throw new NotFoundException('Pagamento não encontrado');
+      throw new NotFoundException('Pagamento não encontrado para usuario', userId);
     }
 
     return pagamento;
   }
+
 
   private async buscarPedidoDoUsuario(usuarioId: string, pedidoUuid: string) {
     const pedido = await this.prisma.pedido.findUnique({
