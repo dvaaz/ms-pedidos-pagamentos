@@ -39,6 +39,15 @@ export class PedidoController {
     return response;
   }
 
+  @Get('/h')
+  @ApiOperation({
+    summary:
+      'Health Check: ' +'Pedido'
+  })
+  healthCheck() {
+    return true
+  }
+
   @Get()
   findAll(@Headers('userId') userId: string) {
     return this.pedidoService.findAll(userId);
